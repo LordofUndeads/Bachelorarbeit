@@ -20,11 +20,11 @@ Innenwinkel der erzeugten Dreiecke in der Zerlegung. Genauer ging es darum, die 
 
 Ihr Ansatz war es, den verbesserten Algorithmus von O'Rourke so zu modifizieren, dass er über die Option des \textbf{Edge Swappings} verfügt.
 Wird ein Ear erkannt, dann wird für jeden seiner Innenwinkel überprüft, ob dieser kleiner ist als ein zuvor festgelegter Grenzwert. Ist das der Fall, dann 
-muss bei diesem Dreieck Edge Swapping durchgeführt werden. Dafür werden der größte Innenwinkel des Dreickes und die, ihm gegenüberliedende, längste Seite bestimmt.
+muss bei diesem Dreieck Edge Swapping durchgeführt werden. Dafür werden der größte Innenwinkel des Dreiecks und die, ihm gegenüberliedende, längste Seite bestimmt.
 Daraufhin wird überprüft, ob es ein Nachbardreieck gibt, welches sich mit dem Ursprünglichen eben diese längste Seite teilt. Gibt es einen solchen Nachbarn, 
 dann wird in dem von den beiden Dreiecken gebildeten Viereck eine Diagonale zwischen den beiden Ecken gezogen, welche jeweils der zuvor bestimmten längsten Seite gegenüber lagen.
 Auf diese Art entstehen wieder zwei Dreiecke, von denen nun die Innenwinkel auf ihre Größe überprüft werden. Ist jeweil der kleinste Winkel größer als der Grenzwert, 
-dann ist die Qualität der Dreicke nun besser als die des ursprünglich Ausgewählten. Wenn dem nicht so ist, bleibt alles unverändert und das Ear wird wie es war gewählt und abgeschnitten.
+dann ist die Qualität der Dreiecke nun besser als die des ursprünglich Ausgewählten. Wenn dem nicht so ist, bleibt alles unverändert und das Ear wird wie es war gewählt und abgeschnitten.
 
 \begin{figure}[h]
     \includegraphics[width=1\textwidth]{bilder/edgeswapping.png}
@@ -52,7 +52,7 @@ laufenden Form des Algorithmus in \ac{fist}.
 Ihr erster Ansatz beruht auf dem \emph{devide-and-conquer-Prinzip}. Anstatt das Polygon $P$ allerding durch Diagonalen in etwa gleich große Unterpolygone $P_k$ zu unterteilen, 
 nutzen Sie $k-1$ viele senkrechte Geraden dafür. Dies ist weit weniger aufwendig in der Berechnung, da das Finden von geeigneten Diagonalen relativ rechenintensiv ist.
 Sie berufen sich dabei auf einen Algorithmus von Sutherland und Hodgman \cite{dnc}. Bei dieser Form der Unterteilung enstehen sogenannte \ac{sp}, welche die Schnittpunkte der senkrechten Geraden mit 
-den Strecken der äußeren Begrenzung darstellen. Dafür benötigt man eine Zeit von $O(n)$ pro Gerade $l$ und fügt im schlimmsten Fall $O(n)$ \ac{sp} ein. Diese werden als neue Eckpunkte in den Unterpolygonen eingefügt und damit vom \ac{eca} auch als Eckpunkte der Dreicke in der Zerlegung benutzt. 
+den Strecken der äußeren Begrenzung darstellen. Dafür benötigt man eine Zeit von $O(n)$ pro Gerade $l$ und fügt im schlimmsten Fall $O(n)$ \ac{sp} ein. Diese werden als neue Eckpunkte in den Unterpolygonen eingefügt und damit vom \ac{eca} auch als Eckpunkte der Dreiecke in der Zerlegung benutzt. 
 Das führt dazu, das Dreiecke in der Gesamtzerlegung von $P$ entstehen, welche unzulässige Eckpunkte besitzen, da diese im Ursprünglichen Polygon nicht existieren. 
 Dafür muss eine Bereinigung der Zerlegung durchgeführt werden, nachdem alle $k$ Threads ihre Triangulation der $P_k$ Unterpolygone geliefert haben. 
 Durch den Schnitt des Poylgons mit einer senkrechten Geraden entstehen zwei \ac{sp} $s_a$ und $s_b$. Um diese wieder zu löschen, werden alle Dreiecke, welche zu einem dieser beiden Punkte inzident sind, aus der Triangulation 
@@ -73,7 +73,7 @@ die Globale Liste aller Eckpunkte des Polygons benötigt. Der Vorgang der Auftei
 
 Der dritte Ansatz, betreffend dem \ac{eca} in \ac{fist} ist der sogenannte \emph{mark-and-cut-Ansatz}, welcher Ähnlichkeiten zum vorher erwähnten \emph{partition-and-cut-Ansatz} aufweist. Auch in diesem Fall werden einige Eckpunkte von $P$ als Markierungen genutzt.
 In der Marierungsphase, durchläuft ein Thread den Streckenzug von $P$ und speichert jeden zweiten konvexen Eckpunkt in einer Liste. Hat dieser Thread die Hälfte aller Punkte überprüft, werden die Cut-Threads gestartet, welche nur die Cutting-Phase durchlaufen. Bildet 
-ein Punkt in der Liste mit seiner gegenüberliegenden Seite ein Dreicke, dann wird dieses sofort als valide gespeichert und abgeschnitten. Jeder dieser Punkte darf nur einmal bearbeitet werden, damit es nicht zu Asynchronität und Redundanz kommt. Wenn die Cut-Threads alle ihre Arbeit getan haben, 
+ein Punkt in der Liste mit seiner gegenüberliegenden Seite ein Dreiecke, dann wird dieses sofort als valide gespeichert und abgeschnitten. Jeder dieser Punkte darf nur einmal bearbeitet werden, damit es nicht zu Asynchronität und Redundanz kommt. Wenn die Cut-Threads alle ihre Arbeit getan haben, 
 werden sie neu gestartet und bearbeiten dann alle Punkte, die Seit ihrem letzten Start zur Liste hinzugefügt worden sind.
 Während dessen durchläuft der Mark-Thread das Polygon erneut und fürgt neue konvexe Punkte zu Liste hinzu und so weiter, bis nurnoch weniger Dreiecke erkannt werden, als vorher mit einem Grenzwert festgelegt. Dieser lag bei Eder, Held und Palfrader bei 20 Dreiecken.
 Der Rest von $P$, welcher noch nicht bearbeitet wurde, wird dann wie im \emph{partition-and-cut-Ansatz} von einem sequentiellen Aufruf von \ac{fist} bearbeitet. 
@@ -98,7 +98,7 @@ genauer eingegangen werden soll. Die folgende Tabelle zeigt das Ergebnis.
     \caption[Vergleich verschiedener Parallelisierungen des \ac{eca} in \ac{fist}]{Vergleich der \ac{fist} Trianulation inklusive \ac{cdt} und FIST's top Heuristik. Aufgeführt sind folgende Parallele Versionen von \ac{fist}: 
     Divide-and-conquer D\&C, Partition-and-cut P\&C und Mark-and-Cut M\&C. 
     (1) Durchschnittliche Abweichung aller Innenwinkel von 60° über alle Triangulationen (je kleiner, desdo besser) 
-    (2) Durchschnittliche Größe des kleinsten Innenwinkels aller Dreicke über alle Trinagulationen (je größer, desdo besser) \cite{paralleleca}}
+    (2) Durchschnittliche Größe des kleinsten Innenwinkels aller Dreiecke über alle Trinagulationen (je größer, desdo besser) \cite{paralleleca}}
     \label{tab:tab1}
 \end{table}
 
@@ -106,11 +106,55 @@ genauer eingegangen werden soll. Die folgende Tabelle zeigt das Ergebnis.
 
 \subsubsection{Delauny Triangulation}
 
+Spricht man von Triangulationen, so stößt man zwangsläufig auf den Begriff der Delauny Triangulation. Sie ist, qualitativ gesehen, die Triangulation mit den ausgewogensten Dreiecken.
+
+\begin{wrapfigure}{lh}{0.25\textwidth}
+    \centering
+    \includegraphics[width=0.23\textwidth]{bilder/umkreis.png}
+    \caption[Umkreis eines Dreiecks]{\centering Umkreis eines Dreiecks \cite{delauny}}
+    \label{fig:umkreis}
+  \end{wrapfigure}
+
+Um jedoch zu verstehen wie die \ac{dt} gebildet wird, benötigt man den Begriff des \emph{leeren Umkreises}. Sie ist die grundlegende Bedingung für eine \ac{dt}, da man nur solche Triangulationen, in denen alle Dreiecke eben diese 
+Bedingung des leeren Umkreises erfüllen, eine \ac{dt} nennt.\cite{delauny}
+
+Man betrachte eine Menge aus Punkten $V$ in der euklidischen Ebene $\mathbb{R}^2$. Ein Dreieck $\triangle v_1v_2v_3$ mit $v_1, v_2, v_3 \in V$ erfüllt die Bedingung des leeren Umkreises, wenn der Kreis, welcher durch die drei Punkte $v_1, v_2, v_3$ geht, 
+keine anderen Punkte $v_i \in V$ beinhaltet. 
+
+Kann man also eine Menge aus Dreiecken $T$ finden, sodass jeder Punkt der Menge $V$ teil mindestens eines Dreiecks ist und jedes Dreieck wenigstens eine Seite mit einem anderen Dreieck teilt, dann
+ist die $T$ eine \ac{dt} von $V$, wenn jedes Dreieck in $T$ einen leeren Umkreis besitzt. 
+
+Dass diese Triangulation nicht eindeutig ist, kann mann an einem einfachen Beispiel zeigen. Hat man vier Punkte im $\mathbb{R}^2$, welche alle zueinander konvex sind, dann ist es möglich, dass alle diese Punkte auf dem selben Umkreis liegen.
+In einem solchen Fall sind alle möglichen Kombinationen aus sich nicht gegenseitig schneidenden Dreiecken als \ac{dt} zulässig. Jedoch gibt es auch den Fall, dass nur je drei Punkte auf einem Kreis liegen. Dafür gibt es immer zwei Möglichkeiten, von denen 
+meist nur eine eine \ac{dt} ist. In Abbildung \ref{fig:fourpointdt} ist sind in den Fällen (a) und (b) diese Möglichkeiten für Umkreise zu sehen, welche einmal eine \ac{dt} erzeugen und einmal nicht. In Fall (c) ist der zuvor beschriebene Fall aufgeführt, 
+bei dem die vier Punkte alle auf dem selben Kreis liegen.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\textwidth]{bilder/fourpointdt.png}
+    \caption[Delauny Triangulation für vier konvexe Punkte]{Delauny Triangulation für vier konvexe Punkte. (a) Delauny Triangulation (b) keine Delauny Triangulation (c) mehrere gleichwertige Triangulationen \cite{delauny}}
+    \label{fig:fourpointdt}
+\end{figure}
+
+Eine sehr vorteilhafte Eigenschaft der \ac{dt}, welche diese für praktische Anwendungen sehr interessant macht, ist, dass sie den minimalen Innenwinkel jedes Dreiecks der Triangulation maximiert. Das bedeutet, dass die \ac{dt} die qualitativ hochwertigste aller möglichen Triangulationen
+einer Menge von Punkten ist. Aber auch so ist es nicht möglich, dass jede \ac{dt} die Bedingung erfüllt, keine Slivers zu enthalten. Es bedeutet lediglich, dass, wenn ein Sliver teil einer \ac{dt} ist, dann wäre auch in jeder anderen Triangulation mindestens ein Sliver enthalten.
+Das ist immerhin in sofern eine gute Eigenschaft, da eine \ac{dt} einer Punktmenge immer die minimale Anzahl an Slivers enthält. Sie dient damit als optimaler Vergleich für beispielsweise den \ac{eca}, da man damit die Abweichung der Triangulation des \ac{eca} zu der durch die \ac{dt} erzeugten bestimmen kann. 
+
+\begin{wrapfigure}{hr}{0.35\textwidth}
+    \centering
+    \includegraphics[width=0.35\textwidth]{bilder/cdt.png}
+    \caption[Constrained Delauny Triangulation für ein Polygon]{Constrained Delauny Triangulation eines Polygons\cite{delauny}}
+    \label{fig:cdt}
+\end{wrapfigure}
+Möchte man, wie in dieser Arbeit, ein Polygon in Dreiecke zerlegen, so stößt man auf ein Problem. Ein Polygon in zwar eine Menge aus Punkten, jedoch sind diese bereits durch einen Streckenzug fest miteinander verbunden. Man kann in dem meisten Fällen also keine echte \ac{dt} erzeugen, 
+da die Dreiecke nicht frei wählbar sind. Man spricht dann von der sogenannten \ac{cdt}. Diese versucht ebenfalls die Bedingung des leeren Umkreises zu erfüllen, allerdings mit einer Einschränkung, welche sie für vorgegebene Polygone umsetzbar macht.
+Der Umkreis eines Dreiecks $\triangle$ darf andere Punkte des Polygons enthalten, wenn diese von innerhalb von $\triangle$ nicht sichtbar sind. Ein Punkt $p$ heißt \textbf{sichtbar}, wenn eine Punkt $q$ im Inneren des Dreiecks $\triangle$ existiert, so dass die Strecke $\overline{pq}$ keine andere Strecke $e \in E$ schneidet.
+Anderenfalls blockiert $e$ sozusagen die Sicht auf den Punkt $p$.
 
 
 \subsubsection{Algorithmus basierend auf Sichtbarkeit}
 
-Wie schon bei der \ac{dt} ist hier der Begriff der Sichtbarkeit von Eckpunkten entscheidend. Anders als zuvor werden hier jedoch nicht sofort Dreicke ermittelt,
+Wie schon bei der \ac{dt} ist hier der Begriff der Sichtbarkeit von Eckpunkten entscheidend. Anders als zuvor werden hier jedoch keine Dreiecke ermittelt,
 welche die Bedingung des leeren Umkreises erfüllen. In diesem Algorithmus, beschrieben von Ran Liu, wird das Polygon $P$ in zwei Unterpolygone $P_1$ und $P_2$ unterteilt,
 welche dann solange rekursiv weiter unterteilt werden, bis die entstandenen Unterpolygone $P_i$ Dreiecke sind.\cite{newAlg}
 Hierfür muss in einem ersten Schritt die Sichtbarkeit jedes Punkte gegenüber einem Referenzpunkt $v_i$ überprüft werden. Dazu betrachtet man zunächst die Nachbarn $v_{i-1}$ und $v_i+1$ 
@@ -119,9 +163,9 @@ als nicht sichtbar im BEzug auf $v_i$. Entlang der Kanten von $P$ wird nun ausge
 Ist das der Fall, dann gilt der Punkt $v_j$ als sichtbar, wenn die Strecke $v_iv_j$ eine Diagonale von $P$ ist. Zusätzlich begrenzt dieser Punkt nun das Sichtfeld und es muss verkleinert werden. Das neue Sichtfeld $\alpha$ berchnet sich also durch $\alpha = v_{i-1},v_i,v_j$.
 Der Vorgang wird fortgesetzt, bis alle Punkte überprüft sind. Ist diese Überprüfung für alle $v_i$ von $P$ abgeschlossen, wird die Anzahl der sichtaberen Punkte 
 gegenüber dem jeweiligen Referenzpunkt bestimmt. Diese dient als Vergleichskriterum für die Punkte untereinander. Als Beispiel ist in der nachfolgenden Abbildung einmal die Ermittlung von $alpha$ und die Überprüfung 
-mehrerer Punkte bezogen auf den Punkt $v_0$ dargestellt.
+mehrerer Punkte bezogen auf den Punkt $v_0$ dargestellt. 
 
-\begin{figure}[t]
+\begin{figure}[h]
 \centering
 \includegraphics[width=1\textwidth]{bilder/sichtbarkeit.png}
 \caption[Sichtbarkeit von Punkten]{\centering(a) $v_3$ ist sichtbar für $v_0$ (b) Überprüfung der Sichtbarkeit von $v_5$ mit neuem Sichtfeld $\alpha$ (nicht sichtbar entspricht rot, sichtbar entspricht grün) \cite{newAlg} }
@@ -156,7 +200,7 @@ bei der Auswahl geben, dann wird ein Test durchgeführt, um diesen Punkt auszuw�
 Unterpolygone zerlegt werden. Man testet, bei welchem der möglichen Punkte für den Second Head, der Betrag der Differenz zwischen der Anzahl an Strecken in den beiden 
 Unterpolygonen $P_1$ und $P_2$ am geringsten ist. Das ist in der nächsten Abbildung zu sehen.
 
-\begin{figure}[t]
+\begin{figure}[h]
     \centering
     \includegraphics[width=1\textwidth]{bilder/second_head_comp.png}
     \caption[Test zur Auswahl des Second Head]{\centering(a) und (b) Vergleich der Differenz zwischen der Länge des schwazen und des türkiesen Strecknabschnitts (c) Auswahl des Second Head \cite{newAlg} }
@@ -170,19 +214,19 @@ gelöscht werden. Damit wird die Laufzeit der Sichtbarkeitsanalyse von $O(n^2)$ 
 Im Vergleich mit dem \ac{eca}, welcher eine Komplexität von $O(n^2)$ besitzt, schneidet er damit schlechter ab. In Tabelle \ref{tab:tab2} und \ref{tab:tab3} werden zwei Beispiele des Vergleichs zwischen dem Sichtbarkeitsalgorithmus 
 und dem \ac{eca} aus der Arbeit von Liu angeführt. Die Algorithmen wurden auf zufällig generierten Polygone unterschiedlicher Knotenanzahl und Form getestet. Dabei waren die getesteten Polygonformen einmal \emph{rund}, das heißt 
 die Eckpunkte konnten nur in einem quadratischen Koordinatenbereich liegen. Der andere Typ war \emph{länglich}, wobei die Punkte eher in ihrer x-Koordinate weiter streuten, nicht so sehr jedoch in der y-Koordinate.
-Es ist in den Ergebnissen dieser Tests ersichtlich, dass die Qualität der Dreicke bezogen auf ihre minimalen Innenwinkel bei Liu's Algorithmus besser ist, als die des \ac{eca}. In Sachen Laufzeit jedoch schneitet der neue Algorithmus jedoch schlechter ab,
+Es ist in den Ergebnissen dieser Tests ersichtlich, dass die Qualität der Dreiecke bezogen auf ihre minimalen Innenwinkel bei Liu's Algorithmus besser ist, als die des \ac{eca}. In Sachen Laufzeit jedoch schneitet der neue Algorithmus jedoch schlechter ab,
 wie bereits die Komplexitätsanalyse zeigte.
 
 In der nachfolgenden Abbildung ist zunächst einmal exemplarisch dargestellt, wie eine solche Zerlegung eines einfachen Polygons durchgeführt wird.
 Danach folgen die angesprochenen Tabellen.
-\begin{figure}[t]
+\begin{figure}[h]
     \centering
     \includegraphics[width=1\textwidth]{bilder/sichtbarkeit_zerlegung.png}
     \caption[Triangulation mittels Sichtbarkeitsalgorithmus]{\centering Von links nach rechts die Schritte der Unterteilung eines Polygons in Unterpolygone bis zur Triangulierung mittels Sichtbarkeit der Eckpunkte (rot die First Heads)\cite{newAlg} }
 \end{figure}
 
-\begin{table}[ht]
-    \begin{tabular}[ht]{| c | c | c | c | c |}
+\begin{table}[t]
+    \begin{tabular}[h]{| c | c | c | c | c |}
     \hline
     \multicolumn{5}{|c|}{Eckenanzahl: 30 ~~~ $v_i = \left\{(x,y)| -50 < x < 50, -50 < y < 50\right\}$}\\ \hline
    Algorithmus & Polygon- & Durchschn.& Standartabw. & Durchschn. \\
@@ -191,12 +235,12 @@ Danach folgen die angesprochenen Tabellen.
     Sichtbarkeit & 4128,5px & 147,446px  & 148,91px & 15,04°\\ \hline
     \end{tabular}
     \caption[Vergleich \ac{eca} und Sichtbarkeitsalgorithmus bei rundem Polygon]{\centering Vergleich des \ac{eca} und des Sichtbarkeitsalgorithmus bei einem rundem Polygon mit 30 Ecken anhand der Standartabweichung der Dreiecksfläche in Pixeln (je kleiner desdo besser)
-    und der durchschnittlichen minimalen Innenwinkelgröße in Grad (je größer desdo besser)\cite{newAlg}}
+    und der durchschnittlichen minimalen Innenwinkelgröße in Grad (je größer desdo besser) \cite{newAlg}}
     \label{tab:tab2}
 \end{table}
 
-\begin{table}[b]
-    \begin{tabular}[b]{| c | c | c | c | c |}
+\begin{table}[t]
+    \begin{tabular}[h]{| c | c | c | c | c |}
     \hline
     \multicolumn{5}{|c|}{Eckenanzahl: 30 ~~~ $v_i = \left\{(x,y)| -100 < x < 100, -30 < y < 30\right\}$}\\ \hline
    Algorithmus & Polygon- & Durchschn.& Standartabw. & Durchschn. \\
@@ -208,4 +252,6 @@ Danach folgen die angesprochenen Tabellen.
     und der durchschnittlichen minimalen Innenwinkelgröße in Grad (je größer desdo besser) \cite{newAlg}}
     \label{tab:tab3}
 \end{table}
+
+
 
