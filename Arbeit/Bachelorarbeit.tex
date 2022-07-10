@@ -1,0 +1,81 @@
+\documentclass[12pt, twoside]{article}
+\usepackage{setspace}
+
+\usepackage{amsmath, amssymb, amscd, amsthm, amsfonts}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{acronym}
+\usepackage{listings}
+\usepackage[a4paper, inner=4cm, outer=2.5cm, top=2cm, bottom=2cm]{geometry}
+\usepackage{endnotes}
+\usepackage{subfigure}
+\usepackage{wrapfig}
+\usepackage{mathtools}
+\usepackage{blindtext}
+\usepackage{fancyhdr}
+\usepackage[nottoc]{tocbibind}
+\usepackage{tikz}
+\usepackage{multirow}
+
+% change language to german
+\usepackage[scaled=0.9]{helvet}
+\usepackage{courier}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[ngerman]{babel}
+\usepackage{hyphenat}
+\usepackage{microtype}
+% ---------
+
+% for titleing
+\usepackage{titling}
+
+\newcommand{\subtitle}[1]{%
+  \posttitle{%
+    \par\end{center}
+    \begin{center}\large#1\end{center}
+    \vskip0.5em}%
+}
+% -----------
+
+\begin{document}
+
+\pagenumbering{gobble}
+
+\tableofcontents
+\pagebreak
+\pagenumbering{roman}
+\listoffigures
+\pagebreak
+\listoftables
+\pagebreak
+
+\section*{Abkürzungsverzeichnis}
+\addcontentsline{toc}{section}{Abkürzungsverzeichnis}
+\begin{acronym}
+    \acro{gui}[GUI]{Graphical User Interface}
+    \acro{eca}[ECA]{Ear-Clipping-Algorithmus}
+    \acro{dt}[DT]{Delaunay Triangulation}
+    \acro{cdt}[CDT]{Constrained Delaunay Triangulation}
+    \acro{tm}[TM]{Turingmaschine}
+    \acro{cpu}[CPU]{Central Processing Unit}
+    \acro{fist}[FIST]{fast industrial-strength triangulation framework}
+    \acro{sp}[SP]{Steiner Punkte}
+    
+\end{acronym}
+\pagebreak
+
+\pagenumbering{arabic}
+
+\begin{onehalfspacing}
+
+\include{sections/einleitung}
+\include{sections/theoretischeGrundlagen}
+\include{sections/verwandteArbeiten}
+
+
+\end{onehalfspacing}
+
+\include{sections/literatur}
+
+\end{document}

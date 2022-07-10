@@ -1,0 +1,152 @@
+\documentclass[12pt, twoside]{article}
+\usepackage{setspace}
+
+\usepackage{amsmath, amssymb, amscd, amsthm, amsfonts}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{acronym}
+\usepackage{listings}
+\usepackage[a4paper, inner=4cm, outer=2.5cm, top=2cm, bottom=2cm]{geometry}
+\usepackage{endnotes}
+\usepackage{subfigure}
+\usepackage{wrapfig}
+\usepackage{mathtools}
+\usepackage{blindtext}
+\usepackage{fancyhdr}
+\usepackage[nottoc]{tocbibind}
+\usepackage{tikz}
+
+% change language to german
+\usepackage[scaled=0.9]{helvet}
+\usepackage{courier}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[ngerman]{babel}
+\usepackage{hyphenat}
+\usepackage{microtype}
+% ---------
+
+% for titleing
+\usepackage{titling}
+
+\newcommand{\subtitle}[1]{%
+  \posttitle{%
+    \par\end{center}
+    \begin{center}\large#1\end{center}
+    \vskip0.5em}%
+}
+% -----------
+
+\begin{document}
+
+\pagenumbering{gobble}
+
+\section*{Abkürzungsverzeichnis}
+\addcontentsline{toc}{section}{Abkürzungsverzeichnis}
+\begin{acronym}
+    \acro{gui}[GUI]{Graphical User Interface}
+    \acro{eca}[ECA]{Ear-Clipping-Algorithmus}
+    \acro{dt}[DT]{Delaunay Triangulation}
+    
+\end{acronym}
+\pagebreak
+
+\pagenumbering{arabic}
+
+\begin{onehalfspacing}
+
+  \section{Einleitung}
+  
+  Die größte technische Wende nach der industriellen Revolution war die digitale Revolution gegen Ende des 20. Jahrhunderts.\cite{digrev}
+  Eingeleitet durch die Entwicklung des Mikrochips und der damit verbundnen Verbreitung des Computers in allen Lebensbereichen, führte sie 
+  zu einer dramatischen Veränderung. Nicht nur in der Industire und Produktion findet diese Veränderung statt, welche sich in flexibler Automatisierung äußert,
+  sondern auch in anderen Bereichen. So wird die Entwicklung des Internets durch vernetzte Rechner möglich.
+  Als dann Computer nicht mehr nur in der Forschung und für die automatische Produktion genutzt werden, sondern auch für den täglichen Gebrauch im Büro und 
+  daheim geutzt werden können, braucht es grafische Benutzeroberflächen und Betriebssysteme. Doch dort macht die Entwicklung nicht halt.
+  Auch die Unterhaltungsbranche erfährt mit Videospielen eine Revolution, welche ebenso auf Computergrafik angewiesen ist, wie ein einfaches \ac{gui}.
+  
+  Zu Beginn beschränkte sich die Darstellung auf sogenannte ASCII-Art, bei der übliche Zeichen aus dem ASCII-Alphabet benutzt wurden, um komplexe Bilder zu erzeugen.
+  Da dies jedoch nicht genügt, um Flächen und Objekte lückenlos darzustellen, bedurfte es einer Inovation. Obwohl es für Menschen einfach ist, Flächen als ganzes zu betrachten und
+  Polygone in unterschiedlichster Komplexität zeichnerisch darzustellen, ist es für Computer als Ganzes nicht so einfach, diese zu speichern, geschweige denn darzustellen.
+  Flächen und dreidimensionale Objekte kann man, so die Idee, über ihre Eckpunkte (Vertices) und die dazwischen liegenden Kanten (Edges) darstellen. 
+  Man erzeugt also ein Polygonnetz, welches den Körper abbildet. Dabei ist die Wahl des Polygons zunächst irrelevant. So könnte man 
+  beispielsweise einen Würfel aus Quadraten oder Dreiecken aufbauen, je nach dem wie man die Kanten definiert.\cite{polynet}
+  In der Praxis sind Polytope und Polygone jedoch meistens unregelmäßig, ergeben sie sich doch zum Beispiel aus Umgebenungsscans mit einem Laser-Scanner oder sind die Oberfläche einer Videospielfigur.
+  Es bietet sich in solchen Fällen nicht an, regelmäßige Polygone, wie Quadrate oder Rechtecke, als Grundlage für das Polygonnetz zu nutzen.
+  
+  Eine geeignete Methode, um diese komplexen Polygone für Computer effizient darzustellen, ist die Nutzung von Dreiecken als grundlegende Form für die Zerlegung.
+  Dieses Vorgehen bezeichnet man als Triangulation. Diese ist formal die Zerlegung eines topologischen Raumes, hier also eines Polygons in Simplexe. Das Simplex der zweiten Dimension das Dreieck und damit ist die Triangulation
+  ein Verfahren zur Zerlegung eines Poylgons in Dreiecke.
+  Es sei erwähnt, dass es Computern durchaus möglich ist, Flächen und Körper darzustellen, welche nicht aus Dreiecken bestehen. Dies ist jedoch wesentlich speicher- und rechenaufwendiger, als es bei
+  Dreiecken der Fall ist. Für die Darstellung eines Objektes ließe sich alternativ auch eine sogenannte Punktwolke nutzen. Wie der Name bereits andeutet, wird das Objekt dabei aus einer großen Menge
+  von Einzelpunkten gebildet. Für einen hohen Detailgrad sind dafür allerdings auch sehr viele Punkte nötig, was den Speicheraufwand stark erhöht. Bei der Verwendung von Dreiecken handelt es sich, vorallem
+  bei runden Objekte, eher um eine Approximation der Form. Eine Kugel wäre dann nicht vollständig rund, sondern würde als Polyeder repräsentiert werden. Dadurch spart man jedoch sehr viel Speicherplatz.
+  Man kennt diese optische Vereinfachung aus alten Videospielen, in denen alle Objekte doch recht kantig und spitz aussehen. Man kann auch hier den Detailgrad steigern, indem man die Anzahl
+  der Dreiecke erhöht und ihre Größe senkt. Da Dreiecke Flächen sind, benötigt man von ihnen jedoch eine geringere Anzahl, um ein Objekt darzustellen, als wenn dies mittels einer Punktwolke geschieht.
+  
+  Um eine Triangulation per Computer durchzuführen, bedarf es eines Algorithmus, welche das Verfahren beschreibt. Von diesen gibt es viele verschiedene, welche unterschiedlichste Herangehensweisen nutzen.
+  Hier seien der \ac{eca}, die \ac{dt} und das Voronoi-Diagramm als Beispiele für solche Algorithmen angeführt. Diese unterscheiden sich erheblich in ihrer Komplexität und Effizienz. 
+  Mit einer Laufzeit von $O(n^3)$\cite{earclipping2}, ist der \ac{eca} bei weitem nicht so effizient wie beispielsweise die \ac{dt} mit $O(n\log n)$. Für den \ac{eca} spricht jedoch seine relative Einfachheit im Vergleich zu anderen Algorithmen.\linebreak 
+  
+  In dieser Arbeit soll jedoch nicht die Laufzeitoptimierung im Vordergrund stehen, sondern etwas anderes. Anschaulichkeit ist ein wichtiger Punkt, wenn es um Didaktik geht.
+  Sie fördert das Verständnis ebenso wie Interaktivität. So hat diese Ausarbeitung zum Ziel eine interaktive Visualisierung für die Triangulation von Polygonen zu schaffen.
+  Dafür ist der \ac{eca} aufgrund seiner relativen Einfachheit gut geeignet. Er lässt sich schrittweise durchlaufen und ist somit sehr anschaulich, da in jedem Schritt ein 
+  Dreieck der Triangulierung erzeugt wird. Es liegt in der Natur dieses Algorithmus, dass Uneindeutigkeiten auftreten, was die Auswahl des nächsten Dreiecks angeht. Diese 
+  führen zum zweiten wichtigen Punkt in dieser Arbeit - der Interaktivität. Der Nutzer der Visualisierungssoftware soll interaktiv entscheiden können, welches das nächste 
+  Dreieck ist, welches bearbeitet wird. Er beeinflusst somit direkt das endgülige Resultat. Neben dem dirketen Eingriff des Nutzers, sollen auch Heuristiken genutzt werden 
+  können, um diese Auswahl zu treffen. Beispielsweise kann hierfür die Größe des Dreiecks im Bezug auf seinen Flächeninhalt genutzt werden oder auch die Innenwinkel. 
+  Es ist angestrebt, dass die Nutzerauswahlen ausgewertet und in eine Heuristik überführt werden. Um dies zu bewerkstelligen, soll die Qualität der Triangulation mittels verschiedener 
+  Metriken beurteilt werden. Hierfür kann ein Vergleich zum Voronoi-Diagramm ebenso wie zum Beispiel die Anzahl der sogenannten \emph{Slivers}\cite{sliver} betrachtet werden. 
+  Letztere führen in Anwendungen der Computergrafik oft zu Fehlern, welche vermieden werden sollten.
+  
+  Es soll somit nicht nur eine Visualisierung für Triangulationen geschaffen werden, sondern es sollen auch die Auswirkungen einfahcer Heuristiken auf die Qualität 
+  dieser Zerlegungen betrachtet werden. Es steht dabei, wie bereits erwähnt, nicht die Laufzeit des Algorithmus im Vordergrund, welche üblicherweise Ziel der Optimierung ist.
+  
+
+
+
+
+\end{onehalfspacing}
+
+\begin{thebibliography}{11}
+  \raggedright
+  \bibitem{digrev}
+  \emph{Digitale Revolution} \break
+  (\href{https://www.staatslexikon-online.de/Lexikon/Digitale_Revolution}{https://www.staatslexikon-online.de})
+  \bibitem{polynet}
+  \emph{Darstellung von Kurven und Flächen}, Christoph Dähne \break
+  (\href{https://www.inf.tu-dresden.de/content/institutes/smt/cg/teaching/seminars/ProseminarSS08/cdaehne/ausarbeitung.pdf}{https://www.inf.tu-dresden.de})
+  \bibitem{polytri}
+  \emph{Polygon Triangulation}, Subhash Suri \break
+  (\href{https://sites.cs.ucsb.edu/~suri/cs235/Triangulation.pdf}{https://sites.cs.ucsb.edu/~suri/cs235/Triangulation.pdf}) 
+  \bibitem{polydef}
+  \emph{Polygon, Definition} \break
+  (\href{https://mathepedia.de/Polygone.html}{https://mathepedia.de/Polygone.html})
+  \bibitem{regpoly}
+  \emph{Regular Polygons. In: Michiel Hazewinkel (Hrsg.): Encyclopedia of Mathematics. Springer-Verlag und EMS Press, Berlin 2002}
+  \bibitem{convex}
+  \emph{Convex Polygon} \break
+  (\href{https://www.mathopenref.com/polygonconvex.html}{https://www.mathopenref.com/polygonconvex.html})
+  \bibitem{polytri3}
+  \emph{Triangulation, Definition} \break
+  (\href{https://encyclopediaofmath.org/wiki/Triangulation}{https://encyclopediaofmath.org/wiki/Triangulation})
+  \bibitem{simplex}
+  \emph{Simplex, Definition} \break
+  (\href{https://encyclopediaofmath.org/wiki/Simplex}{https://encyclopediaofmath.org/wiki/Simplex})
+  \bibitem{earclipping}
+  \emph{Ear-clipping Based Algorithms of Generating High-quality Polygon Triangulation}, Gang Mei, John C.Tipper and Nengxiong Xu \break 
+  (\href{https://arxiv.org/ftp/arxiv/papers/1212/1212.6038.pdf}{https://arxiv.org/ftp/arxiv/papers/1212/1212.6038.pdf})
+  \bibitem{earclipping2}
+  \emph{Triangulation by Ear Clipping}, David Eberly \break 
+  (\href{https://www.geometrictools.com/Documentation/TriangulationByEarClipping.pdf}{https://www.geometrictools.com})
+  \bibitem{polytri2}
+  \emph{Ear-Clipping Triangulierung} \break
+  (\href{https://wiki.delphigl.com/index.php/Ear_Clipping_Triangulierung}{wiki.delphigl.com})
+  \bibitem{sliver}
+  \emph{Geometrical Mesh Quality} \break
+  (\href{https://www.iue.tuwien.ac.at/phd/fleischmann/node13.html#sec:geoqual}{https://www.iue.tuwien.ac.at})
+  
+  
+  \end{thebibliography}
+
+\end{document}

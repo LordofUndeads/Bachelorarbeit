@@ -1,0 +1,104 @@
+\documentclass[11pt]{article}
+\usepackage{amsmath, amssymb, amscd, amsthm, amsfonts}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{acronym}
+\usepackage{listings}
+\usepackage[margin=2cm]{geometry}
+\usepackage{endnotes}
+\usepackage{subfigure}
+\usepackage{wrapfig}
+\usepackage{mathtools}
+\usepackage{blindtext}
+\usepackage{fancyhdr}
+
+% change language to german
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[ngerman]{babel}
+\usepackage{hyphenat}
+% ---------
+
+% for titleing
+\usepackage{titling}
+
+\newcommand{\subtitle}[1]{%
+  \posttitle{%
+    \par\end{center}
+    \begin{center}\large#1\end{center}
+    \vskip0.5em}%
+}
+% -----------
+
+\title{\textbf{Eine interaktive Visualisierung der Triangulation von Polygonen anhand des Ear-Clipping-Algorithmus}}
+\subtitle{Proposal für eine Bachelorarbeit}
+\author{Christoph Paul Pooch}
+
+% \pagestyle{fancy}
+% \fancyhf{}
+% \lfoot{Proposal für eine Bachelorarbeit unter dem Titel "Eine interaktive Visualisierung der Triangulation von Polygonen anhand des Ear-Clipping Algorithmus" (Christoph Paul Pooch)}
+
+\begin{document}
+
+    \maketitle
+
+\section*{Einleitung}
+Ob in wissenschaftlichen Arbeiten, in Form von Robotikanwendungen mittels Umgebungsscans, der virtuellen Modellierung der Umwelt mit visueller Darstellung oder dem
+alltäglichen Leben, in der Form des Films oder von Videospielen, die Computergrafik hat in den letzten Jahren und Jahrzehnten stark an Bedeutung zugenommen. Doch obwohl es für Menschen einfach ist, Flächen als ganzes zu betrachten und Polygone in unterschiedlichster Komplexität zeichnerisch darzustellen,
+ist es für Computer als Ganzes nicht so einfach, diese zu speichern, geschweige denn darzustellen.
+
+Ein Weg, um komplexe Polygone für Computer effizient aufzubereiten und darzustellen, ist die Triangulation. 
+Dabei können diese Polygone in den unterschiedlichsten Varianten auftreten. Beispielsweise können diese Oberflächen einem Umgebungsscan oder Teile eines dreidimensionalen Modells einer Spielfigur sein.
+Das Verfahren der Triangulation beschreibt die Zerlegung eines topologischen Raumes, hier eines Polygons, in Simplexe.
+Das Simplex der zweiten Dimension das Dreieck und damit ist die Triangulation ein Verfahren zur Zerlegung eines Poylgons in Dreiecke.
+
+Es sei erwähnt, dass es Computern durchaus möglich ist, Flächen und Körper darzustellen, welche nicht aus Dreiecken bestehen. Dies ist jedoch wesentlich speicher- 
+und rechenaufwendiger, als es bei Dreiecken der Fall ist. Für die Darstellung eines Objektes ließe sich alternativ auch eine sogenannte Punktwolke nutzen.
+Wie der Name bereits andeutet, wird das Objekt dabei aus einer großen Menge von Einzelpunkten gebildet. Für einen hohen Detailgrad sind dafür allerdings auch sehr viele Punkte nötig, was den Speicheraufwand stark erhöht.
+Bei der Verwendung von Dreiecken handelt es sich, vorallem bei runden Objekte, eher um eine Approximation der Form. Eine Kugel wäre dann nicht vollständig rund, sondern würde als Polyeder repräsentiert werden. Dadurch spart man jedoch 
+sehr viel Speicherplatz. Man kennt diese optische Vereinfachung aus alten Videospielen, in denen alle Objekte doch recht kantig und spitz aussehen. Man kann auch hier den Detailgrad steigern, indem man die Anzahl der Dreiecke erhöht und ihre Größe senkt.
+Da Dreiecke Flächen sind, benötigt man von ihnen jedoch eine geringere Anzahl, um ein Objekt darzustellen, als wenn dies mittels einer Punktwolke geschieht. \break
+
+Um nun ein vorgegebenes Polygon in eine Dreieckszerlegung zu überführen, gibt es verschiedene Algorithmen, welche unterschiedlich komplex und effizient sind. In dieser Arbeit soll der sogenannte Ear-Clipping Algorithmus im Mittelpunkt stehen.
+Mit einer Laufzeit von $O(n^3)$, ist dieser bei weitem nicht so effizient wie beispielsweise die Delaunay-Triangulation mit $O(n \log n)$. Für den Ear-Clipping Algorithmus spricht jedoch seine relative Einfachheit im 
+Vergleich zu anderen Algorithmen. Er ist somit die Wahl für diese Arbeit, in der es darum geht, den Prozess der Triangulation eines, vom Nutzer vorgegebenen, Polygons schrittweise in einer grafischen Oberfläche 
+darzustellen und für den Nutzer interaktiv zu gestallten.
+
+\section*{Problemstellung}
+Eine Visualisierungssoftware, die einem Nutzer die Triangulation eines selbstgewählten Polygons vorführt, benötigt mehrere Dinge.
+Zuerst einmal muss das Programm die Möglichkeit besitzen, Polygone unterschiedlicher Komplexität als Eingabe anzunehmen. Dazu ist eine Zeichenoption notwendig, die nicht nur das Zeichnen, sondern auch das Löschen eines Polygons umfasst.
+Zusätzlich sollte die Option bestehen Löcher in das Polygon zu schneiden, denn das ist auch eine Form des Poylgons, die bei einer Triangulation auftreten kann.\break
+
+Als zweites muss der Algorithmus zur Zerlegung schrittweise durchlaufen werden können, um die größtmögliche Anschaulichkeit zu gewährleisten.
+Der Algorithmus der Wahl ist dabei der Ear-Clipping Algorithmus, dessen Implementierung von meinem Betreuer, Herrn Jonas Treumer, übernommen wird. Es gibt natürlich effizientere Algorithmen zur Zerlegung von Polygonen in Dreiecke, wie zum Beispiel die 
+Delaunay-Triangulation. Diese sind allerdings komplexer und daher nicht Gegenstand der Betrachtung.
+Bei der Triangulation mittels des Ear-Clipping Algorithmus können Uneindeutigkeiten auftreten, was die Wahl des als nächstes behandelten Dreiecks angeht.
+Diese sollen entweder von Nutzer, nach einer Metrik oder sogar zufällig ausgewählt werden können.
+
+Zu guter letzt sollten verschiedene Zerlegungen des selben Polygons vergleichbar sein hinsichtlich unterschiedlicher Maßgaben der Qualität, etwa der Anzahl der Dreiecke, deren durchschnittliche Größe und ähnlichem.
+
+\section*{Aufgabenstellung}
+
+Die Visualisierungssoftware sollte folgende Maßgaben erfüllen:
+
+\begin{itemize}
+ \item Ein Polygon muss als Nutzereingabe zeichenbar sein, inklusive der Möglichkeit zum Schneiden von Löchern und Löschen des Polygons.
+ \item Der Algorithmus soll schrittweise durchlaufen werden können.
+ \item An uneindeutigen Stellen der Auswahl des nächsten Dreieck sollen entweder der Nutzer oder unterschiedliche Heuristiken entscheiden können.
+ \item Die Zerlegung soll am Ende des Algorithmus mit anderen Zerlegungen des gleichen Polygons vergleichbar sein.
+ \item Darüber hinaus soll versucht werden, aus der Auswahl des Nutzers, Metriken für die Beurteilung einer Triangulation abzuleiten.
+\end{itemize}
+Dieses Projekt soll für die Bachelorarbeit unter dem Titel "\textbf{Eine interaktive Visualisierung der Triangulation von Polygonen anhand des Ear-Clipping Algorithmus}" konzipiert und als Prototyp
+implementiert werden. Die Wahl der Entwicklungsplattform und der Programmiersprache sollen an dieser Stelle noch nicht festgelegt werden.
+\pagebreak
+\section*{}
+\begin{thebibliography}{11}
+  \bibitem{polytri}
+  \emph{Polygon Triangulation}, Subhash Suri (\href{https://sites.cs.ucsb.edu/~suri/cs235/Triangulation.pdf}{https://sites.cs.ucsb.edu/~suri/cs235/Triangulation.pdf}) 
+  \bibitem{earclipping}
+  \emph{Ear-clipping Based Algorithms of Generating High-quality Polygon Triangulation}, Gang Mei, John C.Tipper and Nengxiong Xu (\href{https://arxiv.org/ftp/arxiv/papers/1212/1212.6038.pdf}{https://arxiv.org/ftp/arxiv/papers/1212/1212.6038.pdf})
+  \bibitem{polytri2}
+  \emph{Ear-Clipping Triangulierung} (\href{https://wiki.delphigl.com/index.php/Ear_Clipping_Triangulierung}{wiki.delphigl.com})
+  
+  \end{thebibliography}
+\end{document}

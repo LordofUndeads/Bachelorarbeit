@@ -1,0 +1,2 @@
+# EarClippingUI
+Bachelorarbeit EarClipping
