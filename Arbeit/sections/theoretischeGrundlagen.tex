@@ -220,4 +220,34 @@ Anstatt nach dem Abtrennen eines Ear Tip Punkts den Status jedes Eckpunktes erne
 Nur diese beiden Punkte sind nämlich vom Abtrennen von $v_i$ beeinflusst. Somit benötigt man insgesamt nurnoch eine Zeit von $O(n^2)$.\cite{newAlg} 
 In jedem Cutting-Schritt kann man dann zusätzlich entscheiden, welche Dreieck als nächstes ausgewählt werden soll. So könnte an nur die Dreiecke auswählen, welche einer bestimmten Heuristik entsprechen.
 Beispielsweise könnten so nur Dreiecke gewählt werden, bei denen der kleinste Innenwinkel das Maximum aller aktuell verfügbaren Innenwinkel ist. Auf diese Weise ist es denkbar,
-dass man Sliver vermeiden könnte. Andere Ansätze sind exemplarisch im folgenden Abschnitt aufgeführt.
+dass man Sliver vermeiden könnte. Andere Ansätze sind exemplarisch in Kapitel 3 aungeführt.
+
+\subsection{Preprocessing für Polygone mit Löchern}
+
+Neben einfachen Polygonen, wie sie bisher in dieser Arbeit beschrieben worden sind, gibt es auch komplexere Formen. Held bezeichnet sie in seiner Abhandlung über \ac{fist} als \emph{multiply-connected polygonal areas}, 
+also als mehrfach verbundene polygoniale Flächen.\cite{fist} Der Einfachkeit halber sollen eben diese zusammengesetzten Polygone in dieser Arbeit entweder als \textbf{komplexe Polygone} oder als \textbf{Polygone mit Loch} bezeichnet werden.
+Ein solches Loch wird dabei ebenfalls durch einen geschlossenen Streckenzug begrenzt und ist somit selbst ein Polygon. Ein Loch $H$ hat allerdings die Eigenschaft bereits im Inneren eines anderen Polygons $P$ zu liegen, ohne dabei mit dem äußeren 
+Streckenzug von $P$ verbunden zu sein oder diesen zu schneiden. 
+
+Da diese beiden Streckenzüge keine Kante besitzen, welche sie verbindet, ergibt sich ein Problem für den \ac{eca}, welcher nur mit einem geschlossenen Polygonzug und dessen Ecken arbeitet. Um den \ac{eca} dennoch auch auf komlexe Polygone anwenden zu können,
+bedarf es der vorbereitung durch einen anderen Algorithmus, um aus den endlich vielen verschiedenen Streckenzügen von $P$ und den $i$ Löchern $H_i$ zu erzeugen.
+M. Held beschreibt in seiner Arbeit zwei verschiedene Verfahren mit dem selben Grundgedanken. Man fügt dazu zusätzliche Kanten, sogenannte \textbf{Brücken} (contour bridges) zwischen je einer Ecke $v_i$ von $P$ und einer Ecke $u_j$ eines Loches $H$ ein. Diese Kante sei dann $\left\{v_iu_j\right\} \in E(P')$
+Damit man den Streckenzug, der daraus entsteht weiter entlang laufen kann, ohne eine Kante doppelt zu nutzen, muss man die Brücke sozusagen doppelt einfügen. Hierzu erzeugt man Kopien $v_i', u_j'$ von $v_i, u_j$ und verbindet diese ebenfalls mit einer Brücke, 
+allerdings mit umgekehrter Orientierung, $\left\{u_j'v_i'\right\} \in E(P')$. $P'$ soll dabei das neu entstandene Polygon aus der Vereinigung $E(P)\cup E(H) \cup \left\{ \left\{v_iu_j\right\},\left\{u_j'v_i'\right\} \right\} $.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=1\textwidth]{bilder/bridges.png}
+  \caption[Vereinfachung eines Polygons mit mehreren Löchern zu einem einfachen Polygon]{\centering (a) Polygon mit mehrerern Löchern. Brücken gestrichelt dargestellt. (b) Resultierendes Polygon (Durchlaufrichtung entlang des Streckenzugs mittels Pfeilen gekennzeichnet)\cite{fist}}
+  \label{fig:bridges}
+\end{figure}
+
+Der erste Ansatz, um ein Loch $H$ mit dem Polygon $P$ zu verbinden, beruht auf einer vollständigen Enumeration. Man bildet alle Paare von Punkten $(v_i,u_j)$ und verbindet diese mit einer vorläufigen Strecken. Dann berechnet man die Länge aller dieser Strecken und wählt die kürzeste von ihnen als Brücke.
+Dabei muss überprüft werden, dass die gewählte Strecke keine Kante von $P$ oder $H$ schneidet. Sollte es einen Schnittpunkt geben, wird die zweit längste Strecke überprüft und so weiter. Bei diesem Verfahren kommt man auf eine Komplexität von $O(n^3)$ wobei es $O(n^2)$ viel mögliche Strecken gibt und man 
+lineare Zeit benötigt, um eine Brücke als valide zu klassifizieren. Hat man mehr als ein Loch, so beginnt man mit einem beliebigen und verbindet es mit $P$ und wählt dann das nächste aus, bis alle Löcher und $P$ zum Polygon $P'$ vereinigt worden sind.
+
+Da diese Laufzeit sehr unzufriedenstellend ist, schlägt Held ein zweites Verfahren vor, welches er auch bei der Implementierung von \ac{fist} verwendet.
+Hierfür bestimmt man für jedes Loch $H_j$ den am weitesten links liegenden Eckpunkt $u_{left}$. Dann werden die Löcher nach eben diesen Punkten sortiert, von links nach rechts in aufsteigender Reihenfolge. Eine solche Sortierung ist in Abbildung \ref{fig:bridges} zu sehen.
+Man beginnt dann mit dem Loch mit der Nummer eins $H_1$ mit der Verbinung mit $P$. Dazu bestimmt man alle Punkte $v_i$ von $P$, welche links von $u_{left}$ liegen und sortiert diese nach ihrem Abstand zu $u_{left}$.
+Beginnen mit dem am wenigsten entfernten Punkt, $v_1$, wird dann überprüft, ob $\left\{v_iu_{left}\right\}$ eine Brücke ist. Die Sortierung der Punkte $v_i$ soll dafür sorgen, dass möglichst wenig solcher Paare überprpft werden müssen.
+Führt man diesen Algorithmus für alle $i$ Löcher durch, so erhält man im schlimmsten Fall eine Laufzeit von $O(i\cdot n^2)$.
