@@ -1,44 +1,43 @@
 \section{Einleitung}
-%\begin{onehalfspacing}
 
 Die größte technische Wende nach der industriellen Revolution war die digitale Revolution gegen Ende des 20. Jahrhunderts.\cite{digrev}
-Eingeleitet durch die Entwicklung des Mikrochips und der damit verbundnen Verbreitung des Computers in allen Lebensbereichen, führte sie 
-zu einer dramatischen Veränderung. Nicht nur in der Industire und Produktion findet diese Veränderung statt, welche sich in flexibler Automatisierung äußert,
-sondern auch in anderen Bereichen. So wird die Entwicklung des Internets durch vernetzte Rechner möglich.
-Als dann Computer nicht mehr nur in der Forschung und für die automatische Produktion genutzt werden, sondern auch für den täglichen Gebrauch im Büro und 
-daheim geutzt werden können, braucht es grafische Benutzeroberflächen und Betriebssysteme. Doch dort macht die Entwicklung nicht halt.
-Auch die Unterhaltungsbranche erfährt mit Videospielen eine Revolution, welche ebenso auf Computergrafik angewiesen ist, wie ein einfaches \ac{gui}.
+Eingeleitet durch die Entwicklung des Mikrochips und der damit verbunden Verbreitung des Computers in allen Lebensbereichen führte sie 
+zu einer dramatischen Veränderung. Nicht nur in der Industire und Produktion fanden diese tiefgreifenden Umbrüche statt, welche sich in flexibler Automatisierung äußerten,
+sondern auch in anderen Bereichen. So wurde die Entwicklung des Internets durch vernetzte Rechner möglich.
+Als dann Computer nicht mehr nur in der Forschung und für die automatische Produktion genutzt wurden, sondern auch für den täglichen Gebrauch im Büro und 
+daheim etablierten, benötigte man grafische Benutzeroberflächen und Betriebssysteme. Doch dort machte die Entwicklung nicht halt.
+Auch die Unterhaltungsbranche erfuhr mit Videospielen eine Revolution, welche ebenso auf Computergrafik angewiesen ist wie ein einfaches \ac{gui}.
 
 Zu Beginn beschränkte sich die Darstellung auf sogenannte ASCII-Art, bei der übliche Zeichen aus dem ASCII-Alphabet benutzt wurden, um komplexe Bilder zu erzeugen.
-Da dies jedoch nicht genügt, um Flächen und Objekte lückenlos darzustellen, bedurfte es einer Inovation. Obwohl es für Menschen einfach ist, Flächen als ganzes zu betrachten und
-Polygone in unterschiedlichster Komplexität zeichnerisch darzustellen, ist es für Computer als Ganzes nicht so einfach, diese zu speichern, geschweige denn darzustellen.
-Flächen und dreidimensionale Objekte kann man, so die Idee, über ihre Eckpunkte (Vertices) und die dazwischen liegenden Kanten (Edges) darstellen. 
+Da dies jedoch nicht genügte, um Flächen und Objekte lückenlos darzustellen, bedurfte es einer Innovation. Obwohl es für Menschen einfach ist, Flächen als Ganzes zu betrachten und
+Polygone in unterschiedlichster Komplexität zeichnerisch darzustellen, ist es für Computer nicht so einfach, diese zu speichern, geschweige denn darzustellen.
+Flächen und dreidimensionale Objekte kann man, so die Idee, über ihre Eckpunkte (Vertices) und die dazwischen liegenden Kanten (Edges) zu repräsentieren. 
 Man erzeugt also ein Polygonnetz, welches den Körper abbildet. Dabei ist die Wahl des Polygons zunächst irrelevant. So könnte man 
-beispielsweise einen Würfel aus Quadraten oder Dreiecken aufbauen, je nach dem wie man die Kanten definiert.\cite{polynet}
-In der Praxis sind Polytope und Polygone jedoch meistens unregelmäßig, ergeben sie sich doch zum Beispiel aus Umgebenungsscans mit einem Laser-Scanner oder sind die Oberfläche einer Videospielfigur.
+beispielsweise einen Würfel, abhängig von der Definition der Kanten, aus Quadraten oder Dreiecken aufbauen.\cite{polynet}
+In der Praxis sind Polytope und Polygone jedoch meistens unregelmäßig, ergeben sie sich doch zum Beispiel aus Umgebenungsscans mit einem Laser-Scanner oder der Oberfläche einer Videospielfigur.
 Es bietet sich in solchen Fällen nicht an, regelmäßige Polygone, wie Quadrate oder Rechtecke, als Grundlage für das Polygonnetz zu nutzen.
 
-Eine geeignete Methode, um diese komplexen Polygone für Computer effizient darzustellen, ist die Nutzung von Dreiecken als grundlegende Form für die Zerlegung.
-Dieses Vorgehen bezeichnet man als Triangulation. Diese ist formal die Zerlegung eines topologischen Raumes, hier also eines Polygons in Simplexe. Das Simplex der zweiten Dimension das Dreieck und damit ist die Triangulation
+Eine geeignete Methode, um diese komplexen Polygone für Computer effizient darzustellen, ist die Nutzung von Dreiecken als primitive Form für die Zerlegung.
+Dieses Vorgehen bezeichnet man als Triangulation. Diese ist formal die Zerlegung eines topologischen Raumes, hier also eines Polygons, in Simplexe. Das Simplex der zweiten Dimension das Dreieck und damit ist die Triangulation
 ein Verfahren zur Zerlegung eines Poylgons in Dreiecke.
 Es sei erwähnt, dass es Computern durchaus möglich ist, Flächen und Körper darzustellen, welche nicht aus Dreiecken bestehen. Dies ist jedoch wesentlich speicher- und rechenaufwendiger, als es bei
 Dreiecken der Fall ist. Für die Darstellung eines Objektes ließe sich alternativ auch eine sogenannte Punktwolke nutzen. Wie der Name bereits andeutet, wird das Objekt dabei aus einer großen Menge
 von Einzelpunkten gebildet. Für einen hohen Detailgrad sind dafür allerdings auch sehr viele Punkte nötig, was den Speicheraufwand stark erhöht. Bei der Verwendung von Dreiecken handelt es sich, vorallem
 bei runden Objekte, eher um eine Approximation der Form. Eine Kugel wäre dann nicht vollständig rund, sondern würde als Polyeder repräsentiert werden. Dadurch spart man jedoch sehr viel Speicherplatz.
-Man kennt diese optische Vereinfachung aus alten Videospielen, in denen alle Objekte doch recht kantig und spitz aussehen. Man kann auch hier den Detailgrad steigern, indem man die Anzahl
-der Dreiecke erhöht und ihre Größe senkt. Da Dreiecke Flächen sind, benötigt man von ihnen jedoch eine geringere Anzahl, um ein Objekt darzustellen, als wenn dies mittels einer Punktwolke geschieht.
+Man kann auch hier den Detailgrad steigern, indem man die Anzahl der Dreiecke erhöht und ihre Größe reduziert. Da Dreiecke Flächen sind, benötigt man von ihnen jedoch eine geringere Anzahl, um ein Objekt darzustellen, als wenn dies mittels einer Punktwolke geschieht.
 
-Um eine Triangulation per Computer durchzuführen, bedarf es eines Algorithmus, welche das Verfahren beschreibt. Von diesen gibt es viele verschiedene, welche unterschiedlichste Herangehensweisen nutzen.
-Hier seien der \ac{eca}, die \ac{dt} und das Voronoi-Diagramm als Beispiele für solche Algorithmen angeführt. Diese unterscheiden sich erheblich in ihrer Komplexität und Effizienz. 
-Mit einer Laufzeit von $O(n^3)$\cite{earclipping2}, ist der \ac{eca} bei weitem nicht so effizient wie beispielsweise die \ac{dt} mit $O(n\log n)$. Für den \ac{eca} spricht jedoch seine relative Einfachheit im Vergleich zu anderen Algorithmen.\linebreak 
+Um eine Triangulation per Computer durchzuführen, bedarf es eines Algorithmus, der das Verfahren beschreibt. Von diesen gibt es viele verschiedene, welche unterschiedlichste Herangehensweisen nutzen.
+Hier seien der Ear-Clipping-Algorithmus (\ac{eca}) und die monotone Triangulation als Beispiel für Algorithmen genannt. Des weiteren sollen hier die \ac{dt} als Triangulation mit besonderen Eigenschaften und das Voronoi-Diagramm als duale Form zur \ac{dt} angeführt werden. 
+Diese unterscheiden sich erheblich in ihrer Komplexität und Effizienz. 
+Mit einer Laufzeit von $O(n^2)$\cite{earclipping2}, ist der \ac{eca} bei weitem nicht so effizient wie beispielsweise ein Algorithmus zur Erzeugung einer \ac{dt} mit $O(n\log n)$. Für den \ac{eca} spricht jedoch seine relative Einfachheit im Vergleich zu anderen Algorithmen.\linebreak 
 
-In dieser Arbeit soll jedoch nicht die Laufzeitoptimierung im Vordergrund stehen, sondern etwas anderes. Anschaulichkeit ist ein wichtiger Punkt, wenn es um Didaktik geht.
-Sie fördert das Verständnis ebenso wie Interaktivität. So hat diese Ausarbeitung zum Ziel eine interaktive Visualisierung für die Triangulation von Polygonen zu schaffen.
+In dieser Arbeit soll jedoch nicht die Laufzeitoptimierung im Vordergrund stehen, sondern die Anschaulichkeit. Sie ist ein wichtiger Punkt, wenn es um Didaktik geht.
+Anschauliche Lehrmaterialen förderen das Verständnis und bieten Interaktivität. So hat diese Ausarbeitung zum Ziel, eine interaktive Visualisierung für die Triangulation von Polygonen zu schaffen.
 Dafür ist der \ac{eca} aufgrund seiner relativen Einfachheit gut geeignet. Er lässt sich schrittweise durchlaufen und ist somit sehr anschaulich, da in jedem Schritt ein 
 Dreieck der Triangulierung erzeugt wird. Es liegt in der Natur dieses Algorithmus, dass Uneindeutigkeiten auftreten, was die Auswahl des nächsten Dreiecks angeht. Diese 
 führen zum zweiten wichtigen Punkt in dieser Arbeit - der Interaktivität. Der Nutzer der Visualisierungssoftware soll interaktiv entscheiden können, welches das nächste 
-Dreieck ist, welches bearbeitet wird. Er beeinflusst somit direkt das endgülige Resultat. Neben dem dirketen Eingriff des Nutzers, sollen auch Heuristiken genutzt werden 
-können, um diese Auswahl zu treffen. Beispielsweise kann hierfür die Größe des Dreiecks im Bezug auf seinen Flächeninhalt genutzt werden oder auch die Innenwinkel. 
+Dreieck ist, welches bearbeitet wird. Er beeinflusst somit direkt das endgülige Resultat. Neben dem dirketen Eingriff des Nutzers sollen auch Heuristiken zu Einsatz kommen, 
+um diese Auswahl zu treffen. Beispielsweise kann hierfür die Größe des Dreiecks im Bezug auf seinen Flächeninhalt genutzt werden oder auch die Innenwinkel. 
 Es ist angestrebt, dass die Nutzerauswahlen ausgewertet und in eine Heuristik überführt werden. Um dies zu bewerkstelligen, soll die Qualität der Triangulation mittels verschiedener 
 Metriken beurteilt werden. Hierfür kann ein Vergleich zum Voronoi-Diagramm ebenso wie zum Beispiel die Anzahl der sogenannten \emph{Slivers}\cite{sliver} betrachtet werden. 
 Letztere führen in Anwendungen der Computergrafik oft zu Fehlern, welche vermieden werden sollten.
@@ -46,4 +45,3 @@ Letztere führen in Anwendungen der Computergrafik oft zu Fehlern, welche vermie
 Es soll somit nicht nur eine Visualisierung für Triangulationen geschaffen werden, sondern es sollen auch die Auswirkungen einfahcer Heuristiken auf die Qualität 
 dieser Zerlegungen betrachtet werden. Es steht dabei, wie bereits erwähnt, nicht die Laufzeit des Algorithmus im Vordergrund, welche üblicherweise Ziel der Optimierung ist.
 
-%\end{onehalfspacing}
