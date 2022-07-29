@@ -2,8 +2,8 @@
 \subsection{Verbesserungen des Ear-Clipping-Algorithmus}
 
 Wenn man einen Algorithmus mathematisch betrachtet, dann ist die Zeit, welcher er bis zur Terminierung benötigt, zumeist der
-Gegenstand der Betrachtung. Mittels der Komplexitätstheorie lässt sich diese, vom Typ des Computers, auf welchem der Algorithmus 
-läuft, unabhängig, beschreiben. Das Referenzmodell ist dabei zumeist die \ac{tm}.\cite{tm} Ziel ist es, dass ein Algorithmus 
+Gegenstand der Betrachtung. Mittels der Komplexitätstheorie lässt sich eine vom Computertyp unabhängige Beschreibung dafür finden. 
+Das Referenzmodell ist dabei zumeist die \ac{tm}.\cite{tm} Ziel ist es, dass ein Algorithmus 
 auf einer \ac{tm} in Polynomialzeit abläuft. Diese Zeit hängt zumeist von der Eingabegröße ab. Für den \ac{eca} ist die entscheidende 
 Größe die Anzahl der Ecken $n$ des Polygons $P$.
 Betrachtet man den \ac{eca} auf einer \ac{tm}, so hat er eine Komplexität von $O(n^3)$.
@@ -26,34 +26,38 @@ dann wird in dem von den beiden Dreiecken gebildeten Viereck eine Diagonale zwis
 Auf diese Art entstehen wieder zwei Dreiecke, von denen nun die Innenwinkel auf ihre Größe überprüft werden. Ist jeweil der kleinste Winkel größer als der Grenzwert, 
 dann ist die Qualität der Dreiecke nun besser als die des ursprünglich Ausgewählten. Wenn dem nicht so ist, bleibt alles unverändert und das Ear wird wie es war gewählt und abgeschnitten.
 
-\begin{figure}[h]
+%Grid Impementierung FIST
+% Im FIST-Paper wird noch auf eine weitere wichtige Verbesserungstechnik eingegangen: Spatial-Hashing-Verfahren (z.B. Grids), um die Menge der Vertices einzuschränken, 
+% die pro potentiellem Ear getestet werden. Kannst Du darauf evtl. noch eingehen? So ein Grid ist auch in meiner Rust-Implementierung enthalten.
+
+\begin{figure}
     \includegraphics[width=1\textwidth]{bilder/edgeswapping.png}
     \caption[Edge Swapping]{Edge Swapping \cite{earclipping}}
     \label{fig:edgeswapping}
 \end{figure}
 
-Auf diese Art kann die Qualität der Dreiecke in der Triangulation stark erhöht werden. Sie zeigen an Beispielen, dass sich die Innenwinkelgröße durchschniitlich verdoppelt.
+Auf diese Art kann die Qualität der Dreiecke in der Triangulation stark erhöht werden. Sie zeigen an Beispielen, dass sich die Innenwinkelgröße durchschnittlich verdoppelt.
 Teilweise können Dreiecke mit minimalem Innenwinkel von $< 15^\circ$ ganz eliminiert werden. Das hängt jedoch vom eingegebenen Poylgon ab und hat keine Allgemeingültigkeit.
 
 \subsection{Parallelisierung des Ear-Clipping-Algorithmus}
 
-Anstatt den Algorithmus selbst in seiner Laufzeit zu verbessern, ist es ein Gedanke, die Abarbeitung aufzuteilen. Vorallem mit der technischen Entwicklung mehrerer Prozessorkerne in einer \ac{cpu},
+Anstatt den Algorithmus selbst in seiner Laufzeit zu verbessern, ist es ein Gedanke, die Abarbeitung aufzuteilen. Vorallem mit der technischen Entwicklung mehrerer Prozessorkerne in einer \ac{cpu}
 ist verteiltes Rechnen ein gängiges Konzept. Hierzu haben Eder, Held und Palfrader eine Arbeit verfasst, die sich mit der Umsetzung des \ac{eca} unter dem Gesichtspunkt der coarse-grain parallelization,
 zu Deutsch grobkörnigen Parallelisierung, befasst.\cite{paralleleca} Dieses Prinzip beschreibt die Aufteilung eines Programms in längere Unteraufgaben. Das ist ein für Multicore Computer sehr geeignetes Konzept.
-Andere Arbeiten befassten sich auch mit der Umsetzung der Arbeitsteilung aber dort speziell mit dem Konzept der fine-grain parallelization im Bezug auf die \ac{dt}. Die fine-grain parallelization, also die feinkörnige 
+Andere Arbeiten befassten sich auch mit der Umsetzung der Arbeitsteilung, aber dort speziell mit dem Konzept der fine-grain parallelization im Bezug auf die \ac{dt}. Die fine-grain parallelization, also die feinkörnige 
 Parallelisierung, beschreibt die Aufteilung eines Programms in eine Vielzahl kleinerer Aufgaben. 
 Hier ist beispielsweise M. Goodrich\cite{goodrich} zu nennen.
 
 Eder, Held und Palfrader haben ihre Arbeit auf \ac{fist} aufgebaut. Dieses Framework ist ein in C++ verfasster Code für Polygontriangulation basierend auf dem \ac{eca}.\cite{paralleleca}
-Sie beschränkten sich dabei mit der Parallelisierung auf den Bereich des Algorithmus, welcher sich mit der Klassifikation und dem Clipping der Ears befasst. Dieser Teil mach etwa $80\%$ des Rechenaufwandes aus.
+Sie beschränkten sich dabei mit der Parallelisierung auf den Bereich des Algorithmus, welcher sich mit der Klassifikation und dem Clipping der Ears befasst. Dieser Teil macht etwa $80\%$ des Rechenaufwandes aus.
 Um eine Aufteilung in $k$ Threads zu erreichen, welche dann auf den $k$ Kernen der \ac{cpu} abgearbeitet werden sollen, nutzen Sie drei verschiedene Ansätze und vergleichen diese miteinander und mit der nicht parallel 
 laufenden Form des Algorithmus in \ac{fist}.
 
-Ihr erster Ansatz beruht auf dem \emph{devide-and-conquer-Prinzip}. Anstatt das Polygon $P$ allerding durch Diagonalen in etwa gleich große Unterpolygone $P_k$ zu unterteilen, 
+Ihr erster Ansatz beruht auf dem \emph{divide-and-conquer-Prinzip}. Anstatt das Polygon $P$ allerding durch Diagonalen in etwa gleich große Unterpolygone $P_k$ zu unterteilen, 
 nutzen Sie $k-1$ viele senkrechte Geraden dafür. Dies ist weit weniger aufwendig in der Berechnung, da das Finden von geeigneten Diagonalen relativ rechenintensiv ist.
 Sie berufen sich dabei auf einen Algorithmus von Sutherland und Hodgman \cite{dnc}. Bei dieser Form der Unterteilung enstehen sogenannte \ac{sp}, welche die Schnittpunkte der senkrechten Geraden mit 
 den Strecken der äußeren Begrenzung darstellen. Dafür benötigt man eine Zeit von $O(n)$ pro Gerade $l$ und fügt im schlimmsten Fall $O(n)$ \ac{sp} ein. Diese werden als neue Eckpunkte in den Unterpolygonen eingefügt und damit vom \ac{eca} auch als Eckpunkte der Dreiecke in der Zerlegung benutzt. 
-Das führt dazu, das Dreiecke in der Gesamtzerlegung von $P$ entstehen, welche unzulässige Eckpunkte besitzen, da diese im Ursprünglichen Polygon nicht existieren. 
+Das führt dazu, dass Dreiecke in der Gesamtzerlegung von $P$ entstehen, welche unzulässige Eckpunkte besitzen, da diese im Ursprünglichen Polygon nicht existieren. 
 Dafür muss eine Bereinigung der Zerlegung durchgeführt werden, nachdem alle $k$ Threads ihre Triangulation der $P_k$ Unterpolygone geliefert haben. 
 Durch den Schnitt des Poylgons mit einer senkrechten Geraden entstehen zwei \ac{sp} $s_a$ und $s_b$. Um diese wieder zu löschen, werden alle Dreiecke, welche zu einem dieser beiden Punkte inzident sind, aus der Triangulation 
 gelöscht. Auf diese Weise erzeugt man ein Loch $H$ in der Zerlegung, welches wieder ein Polygon ist. Diese kann man nun durch erneute Triangulation mit validen Dreiecken füllen. \linebreak 
@@ -175,7 +179,7 @@ mehrerer Punkte bezogen auf den Punkt $v_0$ dargestellt.
 Für die Anzahl sichtbarer Punkte bezogen auf $v_i$ wird die hier Bezeichnung $s(v_i)$ verwendet. Man kann diesen Vorgang der Sichtbarkeitsanalyse wie folgt in Pseudocode beschreiben.
 
 \begin{flushleft}
-    { \textbf{Algorithmus 3: Sichtbarkeitsanalyse für einen Punkt $v_i$}
+    { \textbf{Algorithmus 4: Sichtbarkeitsanalyse für einen Punkt $v_i$}
           \begin{tabbing}
             \=$~~~~~~$ \= \textbf{Eingabe:} $~~~$\=  Eck\=en $v_i$\=$ \in V$\=$(P),~n = |V(P)| - 3,~s(v_i)=0$\\
             \> \> \textbf{Ausgabe:} \> Anzahl sichtbarer Punkte $s(v_i)$\\

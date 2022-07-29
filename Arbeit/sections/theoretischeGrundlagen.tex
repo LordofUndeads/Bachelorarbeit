@@ -172,7 +172,7 @@ Zusätzlich dazu gibt es noch den verwandten Begriff der \textbf{Neadle}, der ei
 
 Der zentrale Fokus in dieser Arbeit liegt auf dem \ac{eca}. Dieser wurde von Meister in seiner Abhandlung \emph{Polygons have ears} \cite{meister} in seiner ursprünglichen Form beschrieben.
 Der Algorithmus bestimmt Dreiecke, welche die Eigenschaft eines Ears erfüllen, fügt die dafür nötige Diagonale in eine Liste ein und löscht den Ear Tip aus der Liste aller noch nicht 
-bearbeiten Punkte. Dies wird solange wiederholt, bis das Restpolygon nur noch aus drei Punkten besteht. Zuletzt wird die Lister der Diagonalen ausgegeben, da diese die Triangulation des Polygons erzeugt.
+bearbeiten Punkte. Dies wird solange wiederholt, bis das Restpolygon nur noch aus drei Punkten besteht. Zuletzt wird die Liste der Diagonalen ausgegeben, da diese die Triangulation des Polygons erzeugt.
 Der Algoritmus ist im Folgenden in Pseudocode dargestellt.
 
 \begin{flushleft}
@@ -194,7 +194,7 @@ Der Algoritmus ist im Folgenden in Pseudocode dargestellt.
 Dieser Algoritmus hat einen Zeitaufwand von $O(n^3)$ mit einem Aufwand von $O(n^2)$ für das Ermitteln des Ear-Status eines Dreiecks. 
 In dieser Formulierung wird nicht auf die Klassifikation eines Ears im speziellen eingegangen. Hierfür beginnt man klassisch 
 beim ersten ersten Punkt in $L$. Man überprüft ob dieser Punkt $v_i$ konvex ist. Ist das der Fall, dann muss die Strecke $\left\{v_{i-1}v_{i+1}\right\}$ die Eigenschaft haben, 
-eine Diagonale von $P$ zu sein. Wenn das ebenfalls zutrifft, dann ist das Dreicke $v_{i-1}, v_i, v_{i+1}$ ein Ear. 
+eine Diagonale von $P$ zu sein. Wenn das ebenfalls zutrifft, dann ist das Dreiecke $v_{i-1}, v_i, v_{i+1}$ ein Ear. 
 Man kann die Klassifikation so darstellen:
 
 \begin{flushleft}
@@ -202,25 +202,22 @@ Man kann die Klassifikation so darstellen:
         \begin{tabbing}
           \=$~~~~~~$ \= \textbf{Eingabe:} $~~~$\=  Ecken \=${v_i, v_{i-1}, v_{i+1}} \in L$  $~~~~~~~~$\= \\
           \> \> \textbf{Ausgabe:} \> $\triangle v_{i-1}, v_i, v_{i+1}$ ist Ear oder nicht.\\
-          \> \> \textbf{Schritt 1:} \>\textbf{if} $v_i$ konvex\\
-          \> \> \> \>\textbf{if} $\left\{v_{i-1}v_{i+1}\right\}$ ist Diagonale von $P$\\
-          \> \> \> \> \>Ausgabe $\triangle v_{i-1}, v_i, v_{i+1}$ ist Ear.\\
-          \> \> \> \> \textbf{else} \>Ausgabe $\triangle v_{i-1}, v_i, v_{i+1}$ ist kein Ear.\\
-          \> \> \> \> \textbf{endif}\\
+          \> \> \textbf{Schritt 1:} \>\textbf{if} $v_i$ konvex \textbf{AND} $\left\{v_{i-1}v_{i+1}\right\}$ ist Diagonale von $P$\\
+          \> \> \> \>Ausgabe $\triangle v_{i-1}, v_i, v_{i+1}$ ist Ear.\\
           \> \> \> \textbf{else} Ausgabe $\triangle v_{i-1}, v_i, v_{i+1}$ ist kein Ear.\\
           \> \> \> \textbf{endif}\\
         \end{tabbing}
 }
-\end{flushleft}
+\end{flushleft}\pagebreak
 Diese Klassifikation könnte man auch zuerst über alle Punkte $v_i$ in $L$ laufen lassen. Man spricht dann von der Klassifikationsphase. 
 Danach kann man in einer zweiten Phase, der Cutting-Phase, Dreicke auswählen, welche die Ear-Eigenschaft erfüllen und sich nicht überschneiden, 
-und diese dann Abschneiden. Mit diesen beiden Phasen im Wechsel kann man ebenfalls eine Triangulation erreichen. 
+und diese dann abschneiden. Mit diesen beiden Phasen im Wechsel kann man ebenfalls eine Triangulation erreichen. 
 O'Rourke beschreibt in seinem Buch einen Ansatz, der einige Zeitersparnis bei diesem Algorithmus bewirkt.\cite{orourke}
 Anstatt nach dem Abtrennen eines Ear Tip Punkts den Status jedes Eckpunktes erneut zu überprüfen, muss man nur den Status von $v_{i-1}$ und $v_{i+1}$ erneut betrachten.
 Nur diese beiden Punkte sind nämlich vom Abtrennen von $v_i$ beeinflusst. Somit benötigt man insgesamt nurnoch eine Zeit von $O(n^2)$.\cite{newAlg} 
-In jedem Cutting-Schritt kann man dann zusätzlich entscheiden, welche Dreieck als nächstes ausgewählt werden soll. So könnte an nur die Dreiecke auswählen, welche einer bestimmten Heuristik entsprechen.
+In jedem Cutting-Schritt kann man dann zusätzlich entscheiden, welches Dreieck als nächstes ausgewählt werden soll. So könnte man nur die Dreiecke auswählen, welche einer bestimmten Heuristik entsprechen.
 Beispielsweise könnten so nur Dreiecke gewählt werden, bei denen der kleinste Innenwinkel das Maximum aller aktuell verfügbaren Innenwinkel ist. Auf diese Weise ist es denkbar,
-dass man Sliver vermeiden könnte. Andere Ansätze sind exemplarisch in Kapitel 3 aungeführt.
+dass man Sliver vermeiden könnte. Andere Ansätze sind exemplarisch in Kapitel 3 aufgeführt.
 
 \subsection{Preprocessing für Polygone mit Löchern}
 
@@ -230,10 +227,10 @@ Ein solches Loch wird dabei ebenfalls durch einen geschlossenen Streckenzug begr
 Streckenzug von $P$ verbunden zu sein oder diesen zu schneiden. 
 
 Da diese beiden Streckenzüge keine Kante besitzen, welche sie verbindet, ergibt sich ein Problem für den \ac{eca}, welcher nur mit einem geschlossenen Polygonzug und dessen Ecken arbeitet. Um den \ac{eca} dennoch auch auf komlexe Polygone anwenden zu können,
-bedarf es der vorbereitung durch einen anderen Algorithmus, um aus den endlich vielen verschiedenen Streckenzügen von $P$ und den $i$ Löchern $H_i$ zu erzeugen.
+bedarf es der Vorbereitung durch einen anderen Algorithmus, um aus den endlich vielen verschiedenen Streckenzügen von $P$ und den $i$ Löchern $H_i$ zu erzeugen.
 M. Held beschreibt in seiner Arbeit zwei verschiedene Verfahren mit dem selben Grundgedanken. Man fügt dazu zusätzliche Kanten, sogenannte \textbf{Brücken} (contour bridges) zwischen je einer Ecke $v_i$ von $P$ und einer Ecke $u_j$ eines Loches $H$ ein. Diese Kante sei dann $\left\{v_iu_j\right\} \in E(P')$
 Damit man den Streckenzug, der daraus entsteht weiter entlang laufen kann, ohne eine Kante doppelt zu nutzen, muss man die Brücke sozusagen doppelt einfügen. Hierzu erzeugt man Kopien $v_i', u_j'$ von $v_i, u_j$ und verbindet diese ebenfalls mit einer Brücke, 
-allerdings mit umgekehrter Orientierung, $\left\{u_j'v_i'\right\} \in E(P')$. $P'$ soll dabei das neu entstandene Polygon aus der Vereinigung $E(P)\cup E(H) \cup \left\{ \left\{v_iu_j\right\},\left\{u_j'v_i'\right\} \right\} $.
+allerdings mit umgekehrter Orientierung, $\left\{u_j'v_i'\right\} \in E(P')$. $P'$ sei dabei das neu entstandene Polygon aus der Vereinigung $E(P)\cup E(H) \cup \left\{ \left\{v_iu_j\right\},\left\{u_j'v_i'\right\} \right\} $.
 
 \begin{figure}
   \centering
@@ -242,7 +239,7 @@ allerdings mit umgekehrter Orientierung, $\left\{u_j'v_i'\right\} \in E(P')$. $P
   \label{fig:bridges}
 \end{figure}
 
-Der erste Ansatz, um ein Loch $H$ mit dem Polygon $P$ zu verbinden, beruht auf einer vollständigen Enumeration. Man bildet alle Paare von Punkten $(v_i,u_j)$ und verbindet diese mit einer vorläufigen Strecken. Dann berechnet man die Länge aller dieser Strecken und wählt die kürzeste von ihnen als Brücke.
+Der erste Ansatz, um ein Loch $H$ mit dem Polygon $P$ zu verbinden, beruht auf einer vollständigen Enumeration. Man bildet alle Paare von Punkten $(v_i,u_j)$ und verbindet diese mit einer vorläufigen Strecke. Dann berechnet man die Länge aller dieser Strecken und wählt die kürzeste von ihnen als Brücke.
 Dabei muss überprüft werden, dass die gewählte Strecke keine Kante von $P$ oder $H$ schneidet. Sollte es einen Schnittpunkt geben, wird die zweit längste Strecke überprüft und so weiter. Bei diesem Verfahren kommt man auf eine Komplexität von $O(n^3)$ wobei es $O(n^2)$ viel mögliche Strecken gibt und man 
 lineare Zeit benötigt, um eine Brücke als valide zu klassifizieren. Hat man mehr als ein Loch, so beginnt man mit einem beliebigen und verbindet es mit $P$ und wählt dann das nächste aus, bis alle Löcher und $P$ zum Polygon $P'$ vereinigt worden sind.
 
@@ -251,3 +248,67 @@ Hierfür bestimmt man für jedes Loch $H_j$ den am weitesten links liegenden Eck
 Man beginnt dann mit dem Loch mit der Nummer eins $H_1$ mit der Verbinung mit $P$. Dazu bestimmt man alle Punkte $v_i$ von $P$, welche links von $u_{left}$ liegen und sortiert diese nach ihrem Abstand zu $u_{left}$.
 Beginnen mit dem am wenigsten entfernten Punkt, $v_1$, wird dann überprüft, ob $\left\{v_iu_{left}\right\}$ eine Brücke ist. Die Sortierung der Punkte $v_i$ soll dafür sorgen, dass möglichst wenig solcher Paare überprpft werden müssen.
 Führt man diesen Algorithmus für alle $i$ Löcher durch, so erhält man im schlimmsten Fall eine Laufzeit von $O(i\cdot n^2)$.
+
+Ein noch effizienterer Ansatz, welcher auch bei der Umsetzung dieser Arbeit berücksichtigt wird, wurde von David Eberly in seiner Veröffentlichung \emph{Triangulation by Ear Clipping} beschrieben.\cite{eberly}
+Zum Bestimmen der zwei Punkte, welche das Loch $H$ und das äußere Polygon $P$ mit einer Brücke verbinden sollen nutzt er eine Herangehensweise, welche mit einer Halbgerade als Sichtlinie arbeitet.
+Zunächst bestimmt der Algoritmus von Eberly den Eckpunkt $u$ des Loches $H$ mit der größten x-Koordinate. Dieser soll Ausgangspunkt für die Sichtlinie sein. Diese Verläuft entlang positiver X-Richtung und kann somait als $r_u = u + t \cdot (1,0)$ beschrieben werden.
+Der sich ergebende Schnittpunkt von $r_u$ mit den Kanten des Polygons $P$ soll mit $i$ bezeichnet werden. 
+
+%Bild fig 12 mit modifikation M=u, I=i, P=w, x=r_u
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.7\textwidth]{bilder/bridgefindigwithray.png}
+  \caption[Brücken finden mittels Sichtlinie]{\centering Nähester Sichtbarer Punkt $w$ zu Punkt $u$ des Lochs. \cite{eberly}}
+  \label{fig:bridgeray}
+\end{figure}
+
+Für diesen Punkt gibt es nun zwei Möglichkeiten. Entweder $i$ ist Eckpunkt von $P$ oder $i$ liegt auf einer Kante von $P$.
+Im ersten Fall muss $i$ für $u$ sichtbar sein und somit wird die Kante zwischen diesen beiden Punkten die Brücke zwischen $H$ und $P$. Auch diese muss doppelt vorhanden sein, wie bereits zuvor beschrieben.
+Der zweite Fall, bei dem $i$ auf einer Kante $v_iv_{i+1}$ liegt bedarf näherer Betrachtung. Hierfür wird ebenfalls wieder der eine der beiden Punkte bestimmt, welcher die größere x-Koordinate besitzt. 
+Es kann sein, dass der so ausgewählte Punkt $w$ nicht für $u$ sichtbar ist. Das ist dann der Fall wenn sich im Dreieck $\triangle uwi$ konkave Eckpunkte von $P$ befinden. Die Kanten, zu denen diese Eckpunkte gehören, blockieren dann die Sicht auf $w$.
+Daher muss überprüft werden, ob keine solchen PUnkte im inneren des besagten Dreiecks liegen. Ist dem so, dann ist $w$ der gesuchte Punkt für die Brücke zu $u$. Sollten sich konkave Punkte im Inneren von $\triangle uwi$ befinden, dann wird der jenige gesucht, 
+der den Abstand zu $u$ minimiert. Einen solchen Punkt muss es immer geben und dieser ist dann sichtbar für $u$ und eigent sich somit für eine Brücke.
+In Abbildung \ref{fig:wNotVisible} kommen die Punkte $a,b$ und $c$ also neue Kandidate in Frage. Für $a$ ist der Abstand zu $u$ minimal. Der eben beschriebene Algorithmus ist im Folgenden noch einmal in Pseudocode dargestellt.
+%Bild fig 13 mit modifikationen m=u, I=i, x=r_u, p=w, A=a, B=b, C=c
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.5\textwidth]{bilder/blockedray.png}
+  \caption[Ermittlung eines Ersatzpunktes, wenn die Sicht blockiert ist]{\centering Sichtlinie von $u$ nach $w$ ist durch äußeres Polygon blockiert. Konkave Punkte $a, b, c$ sind Kandidaten für die Brückenbildung. 
+  Abstand von $a$ nach $u$ ist minimal.\cite{eberly}}
+  \label{fig:wNotVisible}
+\end{figure}\break
+
+\begin{flushleft}
+  { \textbf{Algorithmus 3: Ermittlung von Brückenknoten mittels Sichtlinie\cite{eberly}}
+        \begin{tabbing}
+          \=$~~~~~~$ \= \textbf{Eingabe:} $~~~$\=  Eck\=en $v_i$\=$ \in V$\=$(P)$, Ecken $u_i \in V(H)$\\
+          \> \> \textbf{Ausgabe:} \> Kanten $E(P')$\\
+          \> \> \textbf{Schritt 1:} \> Wähle $u_i$ mit maximaler x-Koordinate aller $u_i \in V(H)$\\
+          \> \> \textbf{Schritt 2:} \> Bestimme ersten Schnittpunkt $i$ von $r_u = u_i + t \cdot (1,0),$\\
+          \> \> \> $~(t \in \mathbb{R})$ mit $e \in E(P)$\\
+          \> \> \textbf{Schritt 3:} \> Bestimme Eckpunkte von $e$: $v_{1,e},~v_{2,e}$\\
+          \> \> \textbf{Schritt 4:} \> \textbf{if} $i = v_{1,e}$ OR $i = v_{1,e}$\\
+          \> \> \> \> Ausgabe $E(P') := E(P) \cup iu_i \cup E(H) \cup u_ii$\\
+          \> \> \>\textbf{else}\\
+          \> \> \textbf{Schritt 5:} \> \> Bestimme Punkt mit maximaler x-Koordinate\\
+          \> \> \> \> von $v_{1,e},~v_{2,e}$ als Punkt $w$\\
+          \> \> \textbf{Schritt 6:} \> \> Bestimme $\triangle u_iiw$\\
+          \> \> \textbf{Schritt 7:} \> \> \textbf{if} Keine Punkte von $P$ im Inneren $I_\triangle u_iiw$ von $\triangle u_iiw$\\
+          \> \> \> \> \> \> Ausgabe $E(P') := E(P) \cup wu_i \cup E(H) \cup u_iw$\\
+          \> \> \> \>\textbf{else}\\
+          \> \> \textbf{Schritt 8:} \> \> \> \> Bestimme alle konkaven Punkte in $I_\triangle u_iiw$\\
+          \> \> \textbf{Schritt 9:} \> \> \> \> Bestimme Punkt $a \in I_\triangle u_iiw \cap E(P)$ mit minimalem Abstand zu $u_i$\\
+          \> \> \textbf{Schritt 10:} \> \> \> \> Ausgabe $E(P') := E(P) \cup au_i \cup E(H) \cup u_ia$\\
+          \> \> \> \> \textbf{endif}\\
+          \> \> \>\textbf{endif}\\
+
+        \end{tabbing}
+}
+\end{flushleft}
+
+Durch das Einfügen von Brückenkanten können zwar das Polygon $P$ und alle Löcher $H_i$ verbunden werden und als ein einziges Polygon $P'$ behandelt werden, nur ergibt sich ein neues Problem.
+Laut der Definition eines einfachen Polygons (s. Kapitel 2.1.1) ist es nicht erlaubt, dass sich Kanten schneiden oder berühren. Da aber die Brückenkanten doppelt vorhanden sind, also an der exakt gleichen Position
+befinden, ist das Polygon $P'$ kein einfaches solches mehr. Man bezeichnet es als \textbf{schwach einfach} (weakly simple)\cite{weaklysimple}. Diese Polygone können per Definition durch eine beliebige minimale Änderung $\epsilon$ in einfache Polygone 
+umgewandelt werden. Diese Änderung $\epsilon$ kann eine Verschiebung der Eckpunkte der Brücken um eine kleine Konstante sein, sodass sich die doppelten Kanten nicht mehr berühren. Dazu ist es notwendig die ursprünglichen 
+Positionen dieser Punkte zu speichern, damit diese in der Nachbearbeitung wieder an ihre eigentlichen Koordinaten zurück verschoben werden können.
