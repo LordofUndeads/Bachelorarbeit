@@ -39,6 +39,35 @@ dann ist die Qualität der Dreiecke nun besser als die des ursprünglich Ausgew�
 Auf diese Art kann die Qualität der Dreiecke in der Triangulation stark erhöht werden. Sie zeigen an Beispielen, dass sich die Innenwinkelgröße durchschnittlich verdoppelt.
 Teilweise können Dreiecke mit minimalem Innenwinkel von $< 15^\circ$ ganz eliminiert werden. Das hängt jedoch vom eingegebenen Poylgon ab und hat keine Allgemeingültigkeit.
 
+Eine weitere wichtige Verbesserung für den \ac{eca} stellt die Verwendung einer Gitterdatenstruktur, dem sogenannten \textbf{Grid} dar. Sie wurde beispielsweise bei der Implementierung von \ac{fist} verwendet. 
+Dieses Framework ist ein in C++ verfasster Code für Polygontriangulation basierend auf dem \ac{eca}.\cite{paralleleca} \ac{fist} wurde von M. Held entwickelt und beinhaltet verschiedenste Techniken, um Triangulationen zu verbessern.\cite{fist}
+Eine solche Technik sind die angesprochenen Grids. Eine der möglichen Überprüfungsmöglichkeiten ob ein Dreieck in einem Polygon ein Ear ist oder nicht ist die folgende:
+
+\begin{flushleft}
+    \begin{tabbing}
+    \textbf{Satz 5 (Ear-Bedingung:)\cite{fist}}
+    \\
+    Drei\= aufeinanderfolgende Punkte $v_{i-1},~v_i,~v_{i+1} \in V(P)$ bilden ein Ear von $P$\\
+    genau dann, wenn\\
+    
+    (1)\> $v_i$ ist konvex,\\
+    (2)\>die abgeschlossene Hülle des Dreiecks $\triangle v_{i-1}v_iv_{i+1}$ enthält keine konvexen\\
+        \> Punkte aus $V(P)$ (außer $v_{i-1}, v_{i+1}$)
+    \end{tabbing}
+  \end{flushleft}
+
+Benutzt man diese Definition, muss man also für jedes mögliche Dreieck in $P$ überprüfen ob ein oder mehrere konkave Punkte in der abgeschlossenen Hülle des Dreiecks liegen.
+Hier kommt das Grid ins spiel. Es unterteilt das minimal umgebende Rechteck, welches das gesamte Polygon einschließt, in rechteckige Zellen. Für jeden konkaven Punkt von $P$ wird dann die Zelle bestimmt, in welcher er sich befindet und speichern den Punkt in dieser.
+Da man am besten auf Nummer sicher geht, wird ein Punkt der sehr nah an der Grenze zwischen zwei Zellen liegt auch in die Nachbarzelle gespeichert. Was die Auflösung des Grids angeht, ist klar, dass man keinen Speicherplatz mit einem sehr hochauflösenden Gitter verschwenden möchte.
+Nach Held wurde experimentell ein Optimum gefunden mit $w \sqrt{n} \times h \sqrt{n}$ als Anzahl der Zellen, wobei $w$ und $h$ von den Proportionen des umgebenden Rechtecks von $P$ abhängen und $n$ die Anzahl der Ecken von $P$ ist.
+Zusätzlich wird gefordert, dass $w \cdot h = 1$ gilt.
+
+Für die Überprüfung der Ear-Bedingung wird zunächst das minimal umgebende Rechteck bestimmt, welches das betreffende Dreieck einschließt. Dann werden alle Zellen überprüft, welche dieses Rechteck überdeckt, ob sie einen konkaven Punkt enthalten.
+Ist das Dreieck ein Ear kann das Grid nach dem Clipping einfach aktualisiert werden, da für jedes Dreieck maximal zwei Punkte ihren Status von konkav zu konvex ändern können. Wird ein Punkt konvex, dann wird er einfach aus dem Grid gelöscht.
+
+Man bezeichnet die Verwendung eines Grids als \emph{spatial hashing Verfahren} oder \emph{geometrical hashing Verfahren}. Allgemein ist spatial hashig die Erweiterung der Idee hinter einer Hash Tabelle auf höhere Dimensionen. Statt einem einfachen Schlüsselwert (Key) werden die Koordinaten des 
+zu speichernden Objekts als Key verwendet.\cite{spatialhash}
+Das oben beschriebene Verfahren von Held wird in der Umsetzung dieser Arbeit verwendet.
 \subsection{Parallelisierung des Ear-Clipping-Algorithmus}
 
 Anstatt den Algorithmus selbst in seiner Laufzeit zu verbessern, ist es ein Gedanke, die Abarbeitung aufzuteilen. Vorallem mit der technischen Entwicklung mehrerer Prozessorkerne in einer \ac{cpu}
@@ -48,7 +77,7 @@ Andere Arbeiten befassten sich auch mit der Umsetzung der Arbeitsteilung, aber d
 Parallelisierung, beschreibt die Aufteilung eines Programms in eine Vielzahl kleinerer Aufgaben. 
 Hier ist beispielsweise M. Goodrich\cite{goodrich} zu nennen.
 
-Eder, Held und Palfrader haben ihre Arbeit auf \ac{fist} aufgebaut. Dieses Framework ist ein in C++ verfasster Code für Polygontriangulation basierend auf dem \ac{eca}.\cite{paralleleca}
+Eder, Held und Palfrader haben ihre Arbeit auf \ac{fist} aufgebaut. Wie bereits in Kapitel 3.1 erwähnt, bastiert \ac{fist} auf dem \ac{eca}.\cite{paralleleca}
 Sie beschränkten sich dabei mit der Parallelisierung auf den Bereich des Algorithmus, welcher sich mit der Klassifikation und dem Clipping der Ears befasst. Dieser Teil macht etwa $80\%$ des Rechenaufwandes aus.
 Um eine Aufteilung in $k$ Threads zu erreichen, welche dann auf den $k$ Kernen der \ac{cpu} abgearbeitet werden sollen, nutzen Sie drei verschiedene Ansätze und vergleichen diese miteinander und mit der nicht parallel 
 laufenden Form des Algorithmus in \ac{fist}.
@@ -228,8 +257,6 @@ Danach folgen die angesprochenen Tabellen.
     \includegraphics[width=1\textwidth]{bilder/sichtbarkeit_zerlegung.png}
     \caption[Triangulation mittels Sichtbarkeitsalgorithmus]{\centering Von links nach rechts die Schritte der Unterteilung eines Polygons in Unterpolygone bis zur Triangulierung mittels Sichtbarkeit der Eckpunkte (rot die First Heads)\cite{newAlg} }
 \end{figure}
-\pagebreak
-
 
 \begin{table}[t]
     \begin{tabular}[h]{| c | c | c | c | c |}
