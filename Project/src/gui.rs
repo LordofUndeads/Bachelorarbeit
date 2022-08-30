@@ -154,6 +154,7 @@ pub enum PageMessage {
     AlgorithmSelected(Algorithm),
     HeuristicSelected(Heuristic),
     EdgeSwappingToggled(bool),
+    StepTrigToggled(bool),
     DrawPressed,
     DrawHolePressed,
     EraserPressed,
@@ -179,6 +180,12 @@ impl<'a> Page {
             PageMessage::EdgeSwappingToggled(is_active) => {
                 if let Page::Menu { progset, .. } = self {
                     progset.bools.edgeswapping_active = is_active;
+                }
+            }
+
+            PageMessage::StepTrigToggled(is_active) => {
+                if let Page::Menu { progset, .. } = self {
+                    progset.bools.stepwise_active = is_active;
                 }
             }
 
@@ -251,13 +258,21 @@ impl<'a> Page {
 
     fn menu(tools: &'a mut Tools, progset: &'a mut ProgramSettings) -> Column<'a, PageMessage> {
         
-        let tool_menu = Tools::tool_menu(tools);
+        
+        let tool_menu: Column<PageMessage> = Column::new() 
+                                                .width(Length::Fill).height(Length::Units(350))
+                                                    .push(Row::new()
+                                                        .push(Rule::vertical(2).style(style::Rule::Ligth))
+                                                        .push(Tools::tool_menu(tools))
+                                                        .push(Rule::vertical(2).style(style::Rule::Ligth)));
         let draw_panel: Column<PageMessage> = Column::new() ;
         let setting_menu: Row<PageMessage> = ProgramSettings::prog_settings(progset);
         Self::container("")
         .max_width(1280)
         .max_height(720)
+        .spacing(0)
         .push(tool_menu)
+        
         .push(draw_panel)
         .push(setting_menu)
             
@@ -325,51 +340,45 @@ impl<'a> Tools {
         //defining buttons with active and inactive style
         let mut button_d = Column::new();
         if tools.draw_active {
-            button_d = button_d.push(button(&mut tools.draw_button, "Draw")
-            .width(Length::Units(120)))
+            button_d = button_d.push(button(&mut tools.draw_button, "Draw"))
         }
         else {
             button_d = button_d.push(button(&mut tools.draw_button, "Draw")
             .on_press(PageMessage::DrawPressed)
-            .style(style::Button::Secondary)
-            .width(Length::Units(120)))
+            .style(style::Button::Secondary))
         };
 
         let mut button_dh = Column::new();
         if tools.draw_hole_active {
-            button_dh = button_dh.push(button(&mut tools.draw_hole_button, "Draw Hole")
-            .width(Length::Units(120)))
+            button_dh = button_dh.push(button(&mut tools.draw_hole_button, "Draw Hole"))
         }
         else {
             button_dh = button_dh.push(button(&mut tools.draw_hole_button, "Draw Hole")
             .on_press(PageMessage::DrawHolePressed)
-            .style(style::Button::Secondary)
-            .width(Length::Units(120)))
+            .style(style::Button::Secondary))
         };
 
         
         let mut button_c = Column::new();
         if !tools.clear_active {
-            button_c = button_c.push(button(&mut tools.clear_button, "Clear")
-            .width(Length::Units(120)))
+            button_c = button_c.push(button(&mut tools.clear_button, "Clear"))
         }
         else {
             button_c = button_c.push(button(&mut tools.clear_button, "Clear")
             .on_press(PageMessage::ClearPressed)
             .style(style::Button::Secondary))
-            .width(Length::Units(120))
+
         };
 
         let mut button_e = Column::new();
         if tools.eraser_active {
-            button_e = button_e.push(button(&mut tools.eraser_button, "Eraser")
-            .width(Length::Units(120)))
+            button_e = button_e.push(button(&mut tools.eraser_button, "Eraser"))
         }
         else {
             button_e = button_e.push(button(&mut tools.eraser_button, "Eraser")
             .on_press(PageMessage::EraserPressed)
-            .style(style::Button::Secondary)
-            .width(Length::Units(120)))
+            .style(style::Button::Secondary))
+            
         };
 
         //the actual layout of the tool menu
@@ -403,12 +412,19 @@ impl<'a> Tools {
 struct ProgramSettings {
     algorithm: Option<Algorithm>,
     heuristic: Option<Heuristic>,
-    algopt: Option<AlgOption>,
+
     bools: ProgramSettingsBools,
 }
 #[derive(Debug, Clone)]
 struct ProgramSettingsBools {
     edgeswapping_active: bool,
+    stepwise_active: bool,
+}
+
+impl<'a> ProgramSettingsBools {
+    fn new() -> Self {
+        ProgramSettingsBools { edgeswapping_active: false, stepwise_active: true }
+    }
 }
 
 impl<'a> ProgramSettings{
@@ -416,11 +432,7 @@ impl<'a> ProgramSettings{
         ProgramSettings {
             algorithm: Some(Algorithm::EarClipping),
             heuristic: Some(Heuristic::Random),
-            algopt: Some(AlgOption::EdgeSwapping),
-            bools: {
-                ProgramSettingsBools { 
-                    edgeswapping_active: false }
-            }
+            bools: ProgramSettingsBools::new()
         }
     }
 
@@ -435,7 +447,7 @@ impl<'a> ProgramSettings{
             .push(Self::heur_select(program_settings.heuristic))
             .push(Rule::vertical(2).style(style::Rule::Ligth))
 
-            .push(Self::algopt_select(program_settings.bools.edgeswapping_active))
+            .push(Self::algopt_select(&mut program_settings.bools))
             .push(Rule::vertical(2).style(style::Rule::Ligth))
     }
 
@@ -491,7 +503,7 @@ impl<'a> ProgramSettings{
           
     }
 
-    fn algopt_select(bool: bool) -> Column<'a, PageMessage>{
+    fn algopt_select(bools: &mut ProgramSettingsBools) -> Column<'a, PageMessage>{
         let algopt_choices = Column::new()
                 .padding(0)
                 .spacing(10)
@@ -500,12 +512,21 @@ impl<'a> ProgramSettings{
                 .push(Row::new()
                     .push(Text::new("   Options").size(24)))
                 .push(Row::new()
-                    .push(Column::new().width(Length::FillPortion(5)).padding(10)
-                         .push(Toggler::new(
-                    bool,
-                        String::from("EdgeSwapping"),
+                    .push(Column::new().width(Length::FillPortion(5)).padding(10).spacing(10)
+                         
+                    //Toggler for EdgeSwapping
+                        .push(Toggler::new(
+                    bools.edgeswapping_active,
+                        String::from("Edge Swapping"),
                             PageMessage::EdgeSwappingToggled,
-                            )))
+                            ))
+                    //Toggler for StepWiseTriangulation
+                        .push(Toggler::new(
+                    bools.stepwise_active,
+                        String::from("Stepwise Triangulation"),
+                            PageMessage::StepTrigToggled,
+                            ))
+                        )
                     .push(Column::new().width(Length::FillPortion(2))
                         .push(Space::with_width(Length::FillPortion(2))))
 
@@ -528,7 +549,7 @@ fn button<'a, Message: Clone>(
         Text::new(label).horizontal_alignment(alignment::Horizontal::Center),
     )
     .padding(12)
-    .width(Length::Units(100))
+    .width(Length::Units(120))
 }
 
 mod style {
