@@ -10,13 +10,15 @@ pub struct Loader;
 
 impl Loader {
     pub fn init_gui() -> iced::Result {
-        Gui::run(Settings::default())
+        Gui::run(Settings {
+            antialiasing: true,
+            ..Settings::default()
+        })
     }
 }
 
 pub struct Gui {
     pages: Pages, 
-
 }
 
 impl Sandbox for Gui {
@@ -83,20 +85,13 @@ impl Pages {
         Pages {
             pages: vec![
                 Page::Menu {
-                    // algorithm: None, 
-                    // heuristic: None, 
-                    // algopt: None,
                     tools: Tools::new(),
                     progset: ProgramSettings::new(),
+                    draw_panel: DrawPanel::new(),
                 },
                 Page::Iteration,
                 Page::Result,
-                // Page::Welcome,
-                // Page::Radio { selection: None },
-                // Page::Toggler {
-                //     can_continue: false,
-                // },
-                // Page::End,
+             
             ],
             current: 0,
         }
@@ -110,26 +105,26 @@ impl Pages {
         self.pages[self.current].view()
     }
 
-    fn advance(&mut self) {
-        if self.can_continue() {
-            self.current += 1;
-        }
-    }
+    // fn advance(&mut self) {
+    //     if self.can_continue() {
+    //         self.current += 1;
+    //     }
+    // }
 
-    fn go_back(&mut self) {
-        if self.has_previous() {
-            self.current -= 1;
-        }
-    }
+    // fn go_back(&mut self) {
+    //     if self.has_previous() {
+    //         self.current -= 1;
+    //     }
+    // }
 
-    fn has_previous(&self) -> bool {
-        self.current > 0
-    }
+    // fn has_previous(&self) -> bool {
+    //     self.current > 0
+    // }
 
-    fn can_continue(&self) -> bool {
-        self.current + 1 < self.pages.len()
-            && self.pages[self.current].can_continue()
-    }
+    // fn can_continue(&self) -> bool {
+    //     self.current + 1 < self.pages.len()
+    //         && self.pages[self.current].can_continue()
+    // }
 
     fn title(&self) -> &str {
         self.pages[self.current].title()
@@ -141,6 +136,7 @@ enum Page {
     Menu { 
         tools: Tools,
         progset: ProgramSettings,
+        draw_panel: DrawPanel,
     },
     Iteration,
     Result,
@@ -159,6 +155,8 @@ pub enum PageMessage {
     DrawHolePressed,
     EraserPressed,
     ClearPressed,
+    AddLine(Line),
+ 
 }
 
 impl<'a> Page {
@@ -190,20 +188,48 @@ impl<'a> Page {
             }
 
             PageMessage::DrawPressed => {
-
+                if let Page::Menu { tools, .. } = self {
+                    tools.draw_active = true;
+                    tools.draw_hole_active = false;
+                    tools.eraser_active = false;
+                }
             }
 
             PageMessage::DrawHolePressed => {
-
+                if let Page::Menu { tools, .. } = self {
+                    tools.draw_active = false;
+                    tools.draw_hole_active = true;
+                    tools.eraser_active = false;
+                }
             }
 
-            PageMessage::ClearPressed => {
-
-            }
 
             PageMessage::EraserPressed => {
+                if let Page::Menu { tools, .. } = self {
+                    tools.draw_active = false;
+                    tools.draw_hole_active = false;
+                    tools.eraser_active = true;
+                }
+            }
+           
+            PageMessage::ClearPressed => {
+                if let Page::Menu {  draw_panel, tools, .. } = self {
+                    draw_panel.polygon = DrawState::default();
+                    draw_panel.lines.clear();
+                    tools.clear_active = false;
+
+                }
+            }
+            
+            PageMessage::AddLine(line) => {
+                if let Page::Menu { draw_panel, tools, .. } = self {
+                    draw_panel.lines.push(line);
+                    draw_panel.polygon.request_redraw();
+                    tools.clear_active = true;
+                }
 
             }
+
             // PageMessage::BackPressed => {
             //     self.pages.go_back();
             // }
@@ -223,27 +249,26 @@ impl<'a> Page {
         }
     }
 
-    fn can_continue(&self) -> bool {
-        match self {
-            Page::Menu { progset, .. } => true
-                // *algorithm != None && *heuristic != None
-                //&& algopt != None
-                ,
-            Page::Iteration => true,
-            Page::Result => false,
+    // fn can_continue(&self) -> bool {
+    //     match self {
+    //         Page::Menu { progset, .. } => true
+    //             // *algorithm != None && *heuristic != None
+    //             //&& algopt != None
+    //             ,
+    //         Page::Iteration => true,
+    //         Page::Result => false,
 
-        }
-    }
+    //     }
+    // }
 
     fn view(&mut self) -> Element<PageMessage> {
         match self {
-            Page::Menu { tools, progset} =>
-                Self::menu(tools, progset),
+            Page::Menu { tools, progset, draw_panel} =>
+                Self::menu(tools, progset, draw_panel),
 
             Page::Iteration => Self::iteration(),
             Page::Result => Self::result(),
 
-            // Page::Toggler { can_continue } => Self::toggler(*can_continue),
         }
         .into()
     }
@@ -256,7 +281,7 @@ impl<'a> Page {
     
 
 
-    fn menu(tools: &'a mut Tools, progset: &'a mut ProgramSettings) -> Column<'a, PageMessage> {
+    fn menu(tools: &'a mut Tools, progset: &'a mut ProgramSettings, draw_panel: &'a mut DrawPanel) -> Column<'a, PageMessage> {
         
         
         let tool_menu: Column<PageMessage> = Column::new() 
@@ -265,15 +290,17 @@ impl<'a> Page {
                                                         .push(Rule::vertical(2).style(style::Rule::Ligth))
                                                         .push(Tools::tool_menu(tools))
                                                         .push(Rule::vertical(2).style(style::Rule::Ligth)));
-        let draw_panel: Column<PageMessage> = Column::new() ;
+        let draw_panel: Column<PageMessage> = Column::new()
+                                                .push(DrawPanel::draw_panel(draw_panel)) ;
         let setting_menu: Row<PageMessage> = ProgramSettings::prog_settings(progset);
         Self::container("")
         .max_width(1280)
         .max_height(720)
         .spacing(0)
-        .push(tool_menu)
-        
-        .push(draw_panel)
+        .push(Row::new()
+            .padding(0)
+            .push(tool_menu)
+            .push(draw_panel))
         .push(setting_menu)
             
           
@@ -412,7 +439,6 @@ impl<'a> Tools {
 struct ProgramSettings {
     algorithm: Option<Algorithm>,
     heuristic: Option<Heuristic>,
-
     bools: ProgramSettingsBools,
 }
 #[derive(Debug, Clone)]
@@ -539,6 +565,211 @@ impl<'a> ProgramSettings{
           
     }
 }
+
+
+//Draw Panel
+
+use iced::{
+    canvas::event::{self, Event},
+    canvas::{self, Canvas, Cursor, Frame, Geometry, Path, Stroke},
+    mouse, Point, Rectangle,
+};
+
+#[derive(Default)]
+pub struct DrawState {
+    pending: Option<Pending>,
+    cache: canvas::Cache,
+}
+
+struct DrawPanel {
+    polygon: DrawState,
+    lines: Vec<Line>,
+}
+
+impl<'a> DrawPanel {
+    fn new() -> DrawPanel {
+        DrawPanel { 
+            polygon: DrawState { 
+                pending: None, 
+                cache: canvas::Cache::new() }, 
+            lines: vec![], }
+    }
+
+    fn draw_panel(draw_panel: &'a mut DrawPanel) -> Column<'a, PageMessage>{
+        Column::new()
+        .padding(20)
+        .spacing(20)
+        .align_items(Alignment::Center)
+        
+        .push(draw_panel.polygon.view(&draw_panel.lines).map(PageMessage::AddLine))
+        
+        .into()
+    }
+}
+
+impl DrawState {
+    pub fn view<'a>(&'a mut self, lines: &'a [Line],) -> Element<'a, Line> {
+        Canvas::new(PolygonLine {
+            state: self,
+            lines,
+        })
+        .width(Length::Units(600))
+        .height(Length::Units(300))
+        .into()
+    }
+
+    pub fn request_redraw(&mut self) {
+        self.cache.clear()
+    }
+}
+
+struct PolygonLine<'a> {
+    state: &'a mut DrawState,
+    lines: &'a [Line],
+}
+
+impl<'a> canvas::Program<Line> for PolygonLine<'a> {
+    fn update(&mut self, event: Event, bounds: Rectangle, cursor: Cursor) -> (event::Status, Option<Line>) {
+        let cursor_position =
+            if let Some(position) = cursor.position_in(&bounds){
+                position
+            } else {
+                return (event::Status::Ignored, None);
+            };
+
+        match event {
+            Event::Mouse(mouse_event) => {
+                let message = match mouse_event {
+                    mouse::Event::ButtonPressed(mouse::Button::Left) => {
+                        match self.state.pending {
+                            None => {
+                                self.state.pending = Some(Pending::One {
+                                    from: cursor_position,
+                                });
+
+                                None
+                            }
+                            Some(Pending::One { from }) => {
+                                self.state.pending = Some(Pending::Two {
+                                    from,
+                                    to: cursor_position,
+                                });
+
+                                None
+                            }
+                            Some(Pending::Two { from, to }) => {
+                                self.state.pending = Some(Pending::Two {
+                                    from: to,
+                                    to: cursor_position,
+                                });
+                                Some(Line {
+                                    from,
+                                    to,
+                                })
+                            }
+                            
+                        }
+                    }
+                    _ => None,
+                };
+
+                (event::Status::Captured, message)
+            }
+            _ => (event::Status::Ignored, None),
+        }
+    }
+
+    fn draw(&self, bounds: Rectangle, cursor: Cursor) -> Vec<Geometry> {
+        let content =
+            self.state.cache.draw(bounds.size(), |frame: &mut Frame| {
+                Line::draw_all(self.lines, frame);
+
+                frame.stroke(
+                    &Path::rectangle(Point::ORIGIN, frame.size()),
+                    Stroke::default(),
+                );
+            });
+
+        if let Some(pending) = &self.state.pending {
+            let pending_line = pending.draw(bounds, cursor);
+
+            vec![content, pending_line]
+        } else {
+            vec![content]
+        }
+    }
+
+    fn mouse_interaction(
+        &self,
+        bounds: Rectangle,
+        cursor: Cursor,
+    ) -> mouse::Interaction {
+        if cursor.is_over(&bounds) {
+            mouse::Interaction::Crosshair
+        } else {
+            mouse::Interaction::default()
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct Line {
+    from: Point,
+    to: Point,
+
+}
+
+impl Line {
+    fn draw_all(lines: &[Line], frame: &mut Frame) {
+        let lines = Path::new(|p| {
+            for line in lines {
+                p.move_to(line.from);
+                p.line_to(line.to);
+            }
+        });
+
+        frame.stroke(&lines, Stroke::default().with_width(2.0));
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+enum Pending {
+    One { from: Point },
+    Two { from: Point, to: Point },
+
+}
+
+impl Pending {
+    fn draw(&self, bounds: Rectangle, cursor: Cursor) -> Geometry {
+        let mut frame = Frame::new(bounds.size());
+
+        if let Some(cursor_position) = cursor.position_in(&bounds) {
+            match *self {
+                Pending::One { from } => {
+                    let line = Path::line(from, cursor_position);
+                    frame.stroke(&line, Stroke::default().with_width(2.0));
+                }
+                Pending::Two { from, to } => {
+                    let line = Path::line(to, cursor_position);
+                    frame.stroke(&line, Stroke::default().with_width(2.0));
+                    let line = Line {
+                        from,
+                        to,
+                        
+                    };
+
+                    Line::draw_all(&[line], &mut frame);
+                }
+                
+            };
+        }
+
+        frame.into_geometry()
+    }
+}
+
+
+
 
 fn button<'a, Message: Clone>(
     state: &'a mut button::State,
@@ -682,3 +913,4 @@ impl From<AlgOption> for String {
         })
     }
 }
+
