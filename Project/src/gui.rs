@@ -232,7 +232,7 @@ impl<'a> Page {
                 if let Page::Menu {  draw_panel, tools, .. } = self {
                     draw_panel.polygon = DrawState::default();
                     draw_panel.lines.clear();
-                    draw_panel.vertecies.clear();
+                    draw_panel.vertices.clear();
                     tools.clear_active = false;
 
                 }
@@ -243,8 +243,8 @@ impl<'a> Page {
 
                     tools.clear_active = true;
                     draw_panel.lines.push(line);
-                    draw_panel.vertecies.push(line.from);
-                    draw_panel.vertecies.push(line.to);
+                    draw_panel.vertices.push(line.from);
+                    draw_panel.vertices.push(line.to);
                     draw_panel.polygon.request_redraw();
                     
                 }
@@ -276,7 +276,7 @@ impl<'a> Page {
 
     fn can_continue(&self) -> bool {
         match self {
-            Page::Menu { draw_panel, .. } => if draw_panel.vertecies != vec![] { true} else { false},
+            Page::Menu { draw_panel, .. } => if draw_panel.vertices != vec![] { true} else { false},
             Page::Iteration => true,
             Page::Result => false,
 
@@ -305,7 +305,7 @@ impl<'a> Page {
 
     fn menu(tools: &'a mut Tools, progset: &'a mut ProgramSettings, draw_panel: &'a mut DrawPanel, confirm_button: &'a mut button::State) -> Column<'a, PageMessage> {
         
-        let button_con = if draw_panel.vertecies != vec![] {
+        let button_con = if draw_panel.vertices != vec![] {
             button(confirm_button, "Confirm").style(style::Button::Primary).on_press(PageMessage::ConfirmPressed)
         }
         else {
@@ -620,7 +620,7 @@ pub struct DrawState {
 struct DrawPanel {
     polygon: DrawState,
     lines: Vec<Line>,
-    vertecies: Vec<Point>,
+    vertices: Vec<Point>,
     ignore_input: bool,
 }
 
@@ -631,7 +631,7 @@ impl<'a> DrawPanel {
                 pending: None, 
                 cache: canvas::Cache::new() }, 
             lines: vec![], 
-            vertecies: vec![],
+            vertices: vec![],
             ignore_input: true,
         }
     }
@@ -642,18 +642,18 @@ impl<'a> DrawPanel {
         .spacing(20)
         .align_items(Alignment::Center)
         
-        .push(draw_panel.polygon.view(&draw_panel.lines, &draw_panel.vertecies, draw_panel.ignore_input).map(PageMessage::AddLine))
+        .push(draw_panel.polygon.view(&draw_panel.lines, &draw_panel.vertices, draw_panel.ignore_input).map(PageMessage::AddLine))
         
         .into()
     }
 }
 
 impl DrawState {
-    pub fn view<'a>(&'a mut self, lines: &'a [Line], vertecies: &'a [Point], ignore_input: bool) -> Element<'a, Line> {
+    pub fn view<'a>(&'a mut self, lines: &'a [Line], vertices: &'a [Point], ignore_input: bool) -> Element<'a, Line> {
         Canvas::new(PolygonLine {
             state: self,
             lines,
-            vertecies,
+            vertices,
             ignore_input, 
         })
         .width(Length::Units(600))
@@ -669,7 +669,7 @@ impl DrawState {
 struct PolygonLine<'a> {
     state: &'a mut DrawState,
     lines: &'a [Line],
-    vertecies: &'a [Point],
+    vertices: &'a [Point],
     ignore_input: bool,
 }
 
@@ -731,7 +731,7 @@ impl<'a> canvas::Program<Line> for PolygonLine<'a> {
         let content =
             self.state.cache.draw(bounds.size(), |frame: &mut Frame| {
                 Line::draw_all(self.lines, frame);
-                Circle::draw_all(self.vertecies, 3.0,frame);
+                Circle::draw_all(self.vertices, 3.0,frame);
                 frame.stroke(
                     &Path::rectangle(Point::ORIGIN, frame.size()),
                     Stroke::default(),
@@ -784,13 +784,13 @@ impl Line {
 }
 
 impl Circle {
-    fn draw_all(vertecies: &[Point], radius: f32,frame: &mut Frame) {
-        let vertecies = Path::new(|p| {
-            for vert in vertecies {
-                p.circle(*vert, radius)
+    fn draw_all(vertices: &[Point], radius: f32,frame: &mut Frame) {
+        let vertices = Path::new(|p| {
+            for vertex in vertices {
+                p.circle(*vertex, radius)
             }
            });
-           frame.fill(&vertecies, Fill::default());
+           frame.fill(&vertices, Fill::default());
         
     }
 }
