@@ -1,3 +1,4 @@
+
 use iced::{
     alignment, Alignment, button, Button, 
     Column, Container,  Element, Length, Radio, Row, Sandbox,
@@ -38,9 +39,15 @@ impl Sandbox for Gui {
     fn update(&mut self, event: Message) {
         match event {
            
-            Message::PageMessage(step_msg) => {
+            Message::PageMessage(step_msg) => 
+            if step_msg == PageMessage::ConfirmPressed {
+                self.pages.advance()
+            }
+            else{
                 self.pages.update(step_msg, );
             }
+
+            
         }
     }
 
@@ -88,6 +95,7 @@ impl Pages {
                     tools: Tools::new(),
                     progset: ProgramSettings::new(),
                     draw_panel: DrawPanel::new(),
+                    confirm_button: button::State::new(),
                 },
                 Page::Iteration,
                 Page::Result,
@@ -105,11 +113,11 @@ impl Pages {
         self.pages[self.current].view()
     }
 
-    // fn advance(&mut self) {
-    //     if self.can_continue() {
-    //         self.current += 1;
-    //     }
-    // }
+    fn advance(&mut self) {
+        if self.can_continue() {
+            self.current += 1;
+        }
+    }
 
     // fn go_back(&mut self) {
     //     if self.has_previous() {
@@ -121,10 +129,10 @@ impl Pages {
     //     self.current > 0
     // }
 
-    // fn can_continue(&self) -> bool {
-    //     self.current + 1 < self.pages.len()
-    //         && self.pages[self.current].can_continue()
-    // }
+    fn can_continue(&self) -> bool {
+        self.current + 1 < self.pages.len()
+            && self.pages[self.current].can_continue()
+    }
 
     fn title(&self) -> &str {
         self.pages[self.current].title()
@@ -137,13 +145,14 @@ enum Page {
         tools: Tools,
         progset: ProgramSettings,
         draw_panel: DrawPanel,
+        confirm_button: button::State,
     },
     Iteration,
     Result,
 
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum PageMessage {
     // BackPressed,
     // NextPressed,
@@ -156,6 +165,7 @@ pub enum PageMessage {
     EraserPressed,
     ClearPressed,
     AddLine(Line),
+    ConfirmPressed,
  
 }
 
@@ -188,27 +198,33 @@ impl<'a> Page {
             }
 
             PageMessage::DrawPressed => {
-                if let Page::Menu { tools, .. } = self {
+                if let Page::Menu { tools, draw_panel, .. } = self {
                     tools.draw_active = true;
                     tools.draw_hole_active = false;
                     tools.eraser_active = false;
+
+                    draw_panel.ignore_input = !tools.draw_active;
                 }
             }
 
             PageMessage::DrawHolePressed => {
-                if let Page::Menu { tools, .. } = self {
+                if let Page::Menu { tools, draw_panel, .. } = self {
                     tools.draw_active = false;
                     tools.draw_hole_active = true;
                     tools.eraser_active = false;
+
+                    draw_panel.ignore_input = !tools.draw_active;
                 }
             }
 
 
             PageMessage::EraserPressed => {
-                if let Page::Menu { tools, .. } = self {
+                if let Page::Menu { tools, draw_panel, .. } = self {
                     tools.draw_active = false;
                     tools.draw_hole_active = false;
                     tools.eraser_active = true;
+
+                    draw_panel.ignore_input = !tools.draw_active;
                 }
             }
            
@@ -216,6 +232,7 @@ impl<'a> Page {
                 if let Page::Menu {  draw_panel, tools, .. } = self {
                     draw_panel.polygon = DrawState::default();
                     draw_panel.lines.clear();
+                    draw_panel.vertecies.clear();
                     tools.clear_active = false;
 
                 }
@@ -223,10 +240,18 @@ impl<'a> Page {
             
             PageMessage::AddLine(line) => {
                 if let Page::Menu { draw_panel, tools, .. } = self {
-                    draw_panel.lines.push(line);
-                    draw_panel.polygon.request_redraw();
+
                     tools.clear_active = true;
+                    draw_panel.lines.push(line);
+                    draw_panel.vertecies.push(line.from);
+                    draw_panel.vertecies.push(line.to);
+                    draw_panel.polygon.request_redraw();
+                    
                 }
+
+            }
+
+            PageMessage::ConfirmPressed => {
 
             }
 
@@ -249,22 +274,19 @@ impl<'a> Page {
         }
     }
 
-    // fn can_continue(&self) -> bool {
-    //     match self {
-    //         Page::Menu { progset, .. } => true
-    //             // *algorithm != None && *heuristic != None
-    //             //&& algopt != None
-    //             ,
-    //         Page::Iteration => true,
-    //         Page::Result => false,
+    fn can_continue(&self) -> bool {
+        match self {
+            Page::Menu { draw_panel, .. } => if draw_panel.vertecies != vec![] { true} else { false},
+            Page::Iteration => true,
+            Page::Result => false,
 
-    //     }
-    // }
+        }
+    }
 
     fn view(&mut self) -> Element<PageMessage> {
         match self {
-            Page::Menu { tools, progset, draw_panel} =>
-                Self::menu(tools, progset, draw_panel),
+            Page::Menu { tools, progset, draw_panel, confirm_button} =>
+                Self::menu(tools, progset, draw_panel, confirm_button),
 
             Page::Iteration => Self::iteration(),
             Page::Result => Self::result(),
@@ -281,9 +303,15 @@ impl<'a> Page {
     
 
 
-    fn menu(tools: &'a mut Tools, progset: &'a mut ProgramSettings, draw_panel: &'a mut DrawPanel) -> Column<'a, PageMessage> {
+    fn menu(tools: &'a mut Tools, progset: &'a mut ProgramSettings, draw_panel: &'a mut DrawPanel, confirm_button: &'a mut button::State) -> Column<'a, PageMessage> {
         
-        
+        let button_con = if draw_panel.vertecies != vec![] {
+            button(confirm_button, "Confirm").style(style::Button::Primary).on_press(PageMessage::ConfirmPressed)
+        }
+        else {
+            button(confirm_button, "Confirm").style(style::Button::Primary)
+        };
+
         let tool_menu: Column<PageMessage> = Column::new() 
                                                 .width(Length::Fill).height(Length::Units(350))
                                                     .push(Row::new()
@@ -302,6 +330,14 @@ impl<'a> Page {
             .push(tool_menu)
             .push(draw_panel))
         .push(setting_menu)
+        .push(Row::new()
+            .push(Column::new().width(Length::Fill)
+            .push(Space::with_height(Length::Units(20)))
+                .push(Row::new()
+                    .push(Space::with_width(Length::Fill))
+                    .push(button_con))))
+            
+        
             
           
     }
@@ -570,9 +606,9 @@ impl<'a> ProgramSettings{
 //Draw Panel
 
 use iced::{
-    canvas::event::{self, Event},
-    canvas::{self, Canvas, Cursor, Frame, Geometry, Path, Stroke},
-    mouse, Point, Rectangle,
+    canvas::event::{self, Event, },
+    canvas::{self, Canvas, Cursor, Frame, Geometry, Path, Stroke, Fill},
+    mouse, Point, Rectangle, 
 };
 
 #[derive(Default)]
@@ -584,6 +620,8 @@ pub struct DrawState {
 struct DrawPanel {
     polygon: DrawState,
     lines: Vec<Line>,
+    vertecies: Vec<Point>,
+    ignore_input: bool,
 }
 
 impl<'a> DrawPanel {
@@ -592,26 +630,31 @@ impl<'a> DrawPanel {
             polygon: DrawState { 
                 pending: None, 
                 cache: canvas::Cache::new() }, 
-            lines: vec![], }
+            lines: vec![], 
+            vertecies: vec![],
+            ignore_input: true,
+        }
     }
 
     fn draw_panel(draw_panel: &'a mut DrawPanel) -> Column<'a, PageMessage>{
         Column::new()
-        .padding(20)
+        .padding(0)
         .spacing(20)
         .align_items(Alignment::Center)
         
-        .push(draw_panel.polygon.view(&draw_panel.lines).map(PageMessage::AddLine))
+        .push(draw_panel.polygon.view(&draw_panel.lines, &draw_panel.vertecies, draw_panel.ignore_input).map(PageMessage::AddLine))
         
         .into()
     }
 }
 
 impl DrawState {
-    pub fn view<'a>(&'a mut self, lines: &'a [Line],) -> Element<'a, Line> {
+    pub fn view<'a>(&'a mut self, lines: &'a [Line], vertecies: &'a [Point], ignore_input: bool) -> Element<'a, Line> {
         Canvas::new(PolygonLine {
             state: self,
             lines,
+            vertecies,
+            ignore_input, 
         })
         .width(Length::Units(600))
         .height(Length::Units(300))
@@ -626,12 +669,17 @@ impl DrawState {
 struct PolygonLine<'a> {
     state: &'a mut DrawState,
     lines: &'a [Line],
+    vertecies: &'a [Point],
+    ignore_input: bool,
 }
 
 impl<'a> canvas::Program<Line> for PolygonLine<'a> {
     fn update(&mut self, event: Event, bounds: Rectangle, cursor: Cursor) -> (event::Status, Option<Line>) {
         let cursor_position =
-            if let Some(position) = cursor.position_in(&bounds){
+            if self.ignore_input {
+                return (event::Status::Ignored, None);
+            }
+            else if let Some(position) = cursor.position_in(&bounds){
                 position
             } else {
                 return (event::Status::Ignored, None);
@@ -655,7 +703,7 @@ impl<'a> canvas::Program<Line> for PolygonLine<'a> {
                                     to: cursor_position,
                                 });
 
-                                None
+                               None
                             }
                             Some(Pending::Two { from, to }) => {
                                 self.state.pending = Some(Pending::Two {
@@ -683,7 +731,7 @@ impl<'a> canvas::Program<Line> for PolygonLine<'a> {
         let content =
             self.state.cache.draw(bounds.size(), |frame: &mut Frame| {
                 Line::draw_all(self.lines, frame);
-
+                Circle::draw_all(self.vertecies, 3.0,frame);
                 frame.stroke(
                     &Path::rectangle(Point::ORIGIN, frame.size()),
                     Stroke::default(),
@@ -704,7 +752,7 @@ impl<'a> canvas::Program<Line> for PolygonLine<'a> {
         bounds: Rectangle,
         cursor: Cursor,
     ) -> mouse::Interaction {
-        if cursor.is_over(&bounds) {
+        if cursor.is_over(&bounds) && !self.ignore_input {
             mouse::Interaction::Crosshair
         } else {
             mouse::Interaction::default()
@@ -712,12 +760,15 @@ impl<'a> canvas::Program<Line> for PolygonLine<'a> {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Line {
     from: Point,
     to: Point,
 
 }
+
+#[derive(Debug, Clone)]
+pub struct Circle;
 
 impl Line {
     fn draw_all(lines: &[Line], frame: &mut Frame) {
@@ -729,6 +780,18 @@ impl Line {
         });
 
         frame.stroke(&lines, Stroke::default().with_width(2.0));
+    }
+}
+
+impl Circle {
+    fn draw_all(vertecies: &[Point], radius: f32,frame: &mut Frame) {
+        let vertecies = Path::new(|p| {
+            for vert in vertecies {
+                p.circle(*vert, radius)
+            }
+           });
+           frame.fill(&vertecies, Fill::default());
+        
     }
 }
 
@@ -748,16 +811,22 @@ impl Pending {
                 Pending::One { from } => {
                     let line = Path::line(from, cursor_position);
                     frame.stroke(&line, Stroke::default().with_width(2.0));
+
                 }
                 Pending::Two { from, to } => {
                     let line = Path::line(to, cursor_position);
                     frame.stroke(&line, Stroke::default().with_width(2.0));
+                    
                     let line = Line {
                         from,
                         to,
                         
                     };
 
+                    // let circle = Circle {center: from, radius: 3.0};
+              
+
+                    //Circle::draw_all(&[circle], &mut frame);
                     Line::draw_all(&[line], &mut frame);
                 }
                 
@@ -851,12 +920,6 @@ pub enum Heuristic {
     BiggestMinAngle,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum AlgOption {
-    EdgeSwapping,
-
-}
-
 
 //Helping implementations to make Strings from enum type and make a list of all enum types for Algorithm, Heuristic and Option
 impl<'a> Algorithm {
@@ -898,19 +961,4 @@ impl From<Heuristic> for String {
     }
 }
 
-impl AlgOption {
-    fn all() -> [AlgOption; 1] {
-        [
-            AlgOption::EdgeSwapping, 
-        ]
-    }
-}
-
-impl From<AlgOption> for String {
-    fn from(algopt: AlgOption) -> String {
-        String::from(match algopt {
-            AlgOption::EdgeSwapping => "Edge Swapping",
-        })
-    }
-}
 
