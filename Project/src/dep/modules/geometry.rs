@@ -18,26 +18,50 @@ pub struct Circle{
 }
 
 impl Line {
-    pub fn draw_all(lines: &[Line], frame: &mut Frame) {
-        let lines = Path::new(|p| {
+
+    pub fn new(from: Point, to: Point) -> Line {
+        Line {
+            from,
+            to,
+        }
+    }
+
+    pub fn draw_all(vertices: &Vec<Point>, frame: &mut Frame) {
+        
+        let lines = Line::make_lines(vertices);
+        
+        let outlines = Path::new(|p| {
             for line in lines {
                 p.move_to(line.from);
                 p.line_to(line.to);
             }
         });
 
-        frame.stroke(&lines, Stroke::default().with_width(2.0));
+        frame.stroke(&outlines, Stroke::default().with_width(2.0));
+    }
+
+    fn make_lines(vertices: &Vec<Point>) -> Vec<Line> {
+        let mut lines: Vec<Line> = vec![];
+        for i in vertices.windows(2) {
+            lines.push(Line::new( i[0], i[1]))
+        }
+        return lines;
     }
 }
 
 impl Circle {
-    pub fn draw_all(circles: &[Point], radius: f32,frame: &mut Frame) {
+    pub fn draw_all(vertices: &Vec<Point>, radius: f32,frame: &mut Frame) {
         let circles = Path::new(|p| {
-            for vertex in circles{
-                p.circle(*vertex, radius)
+            for vertex in vertices{
+                p.circle(*vertex, radius);
+                Circle::draw(*vertex, radius, frame)
             }
            });
            frame.fill(&circles, Fill::default());
         
+    }
+
+    pub fn draw(vertex: Point, radius: f32, frame: &mut Frame) {
+        frame.stroke(&Path::circle(vertex, radius), Stroke::default());
     }
 }

@@ -33,16 +33,16 @@ impl<'a> ProgramSettings{
     pub fn prog_settings(program_settings: &'a mut ProgramSettings) -> Row<'a, PageMessage>{
 
         Row::new().max_height(200)
-            .push(Rule::vertical(2).style(style::Rule::Ligth))
+            .push(Rule::vertical(2).style(style::RuleStyle::Light))
 
             .push(Self::alg_select(program_settings.algorithm))
-            .push(Rule::vertical(2).style(style::Rule::Ligth))
+            .push(Rule::vertical(2).style(style::RuleStyle::Light))
 
             .push(Self::heur_select(program_settings.heuristic))
-            .push(Rule::vertical(2).style(style::Rule::Ligth))
+            .push(Rule::vertical(2).style(style::RuleStyle::Light))
 
             .push(Self::algopt_select(&mut program_settings.bools))
-            .push(Rule::vertical(2).style(style::Rule::Ligth))
+            .push(Rule::vertical(2).style(style::RuleStyle::Light))
     }
 
     fn alg_select(selection: Option<Algorithm>) -> Column<'a, PageMessage>{
@@ -50,7 +50,7 @@ impl<'a> ProgramSettings{
                 .padding(0)
                 .spacing(10)
                 .width(Length::Units(300))
-                .push(Rule::horizontal(2).style(style::Rule::Ligth))
+                .push(Rule::horizontal(2).style(style::RuleStyle::Light))
                 .push(Text::new("   Algorithmus").size(18))
                 .push(Algorithm::all().iter().cloned().fold(
                                 Column::new().padding(10).spacing(15),
@@ -64,7 +64,7 @@ impl<'a> ProgramSettings{
                                 },
                             ))
                 .push(Space::with_height(Length::Fill))
-                .push(Rule::horizontal(2).style(style::Rule::Ligth));
+                .push(Rule::horizontal(2).style(style::RuleStyle::Light));
                             
         Column::new()
           .push(alg_choices)
@@ -76,7 +76,7 @@ impl<'a> ProgramSettings{
                 .padding(0)
                 .spacing(10)
                 .width(Length::Units(300))
-                .push(Rule::horizontal(2).style(style::Rule::Ligth))
+                .push(Rule::horizontal(2).style(style::RuleStyle::Light))
                 .push(Text::new("   Heuristic").size(18))
                 .push(Heuristic::all().iter().cloned().fold(
                                 Column::new().padding(10).spacing(15),
@@ -90,7 +90,7 @@ impl<'a> ProgramSettings{
                                 },
                             ))
                 .push(Space::with_height(Length::Fill))
-                .push(Rule::horizontal(2).style(style::Rule::Ligth));
+                .push(Rule::horizontal(2).style(style::RuleStyle::Light));
 
         Column::new()
           .push(heur_choices)
@@ -102,7 +102,7 @@ impl<'a> ProgramSettings{
                 .padding(0)
                 .spacing(10)
                 .width(Length::Units(300))
-                .push(Rule::horizontal(2).style(style::Rule::Ligth))
+                .push(Rule::horizontal(2).style(style::RuleStyle::Light))
                 .push(Row::new()
                     .push(Text::new("   Options").size(18)))
                 .push(Row::new()
@@ -126,7 +126,7 @@ impl<'a> ProgramSettings{
 
                 .push(Space::with_height(Length::Fill)))
                 
-                .push(Rule::horizontal(2).style(style::Rule::Ligth));
+                .push(Rule::horizontal(2).style(style::RuleStyle::Light));
 
         Column::new()
           .push(algopt_choices)

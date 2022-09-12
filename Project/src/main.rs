@@ -1,19 +1,30 @@
-use iced::{
-    button, 
+use std::{process::{exit, Termination, ExitCode}, };
+
+use iced::{button, 
     Column, Container,  Element, Length, Row, Sandbox,
-     Settings, Space, Text,  Rule,
+     Settings, Space, Text,  Rule, window, window::Position,  
 };
 
 mod dep;
-use dep::modules::{style, style::button, message::{PageMessage, Message},
-    };
+use dep::{modules::{style, style::button, message::{PageMessage, Message},
+    }, menu::draw_panel};
 
-use dep::menu::{program_settings::ProgramSettings, tools::Tools, draw_panel::{DrawPanel, DrawState}};
+use dep::menu::{program_settings::ProgramSettings, tools::Tools, draw_panel::{DrawPanel, DrawState}, };
+
+
+
 
 pub fn main() -> iced::Result {
-    
+
+    //PopUpLoader::init_card()
     Gui::run(Settings {
         antialiasing: true,
+        window: window::Settings {
+            resizable: false,
+            position: Position::Centered,
+            size: (1280, 720),
+            ..window::Settings::default()
+        },
         ..Settings::default()
     })
 }
@@ -64,13 +75,14 @@ impl Sandbox for Gui {
             .spacing(20)
             .padding(20)
             .push(steps.view().map(Message::PageMessage))
-            //.push(controls)
+      
             .into();
 
         Container::new(content)
             .height(Length::Fill)
             .center_y()
             .width(Length::Fill)
+            .style(style::WindowStyle::Light)
             .into()
     }
 }
@@ -93,6 +105,7 @@ impl Pages {
                     confirm_button: button::State::new(),
                     undo_buffer: vec![],
                     action_buffer: vec![],
+                
                 },
                 Page::Iteration,
                 Page::Result,
@@ -145,6 +158,7 @@ enum Page {
         confirm_button: button::State,
         undo_buffer: Vec<PageMessage>,
         action_buffer: Vec<PageMessage>,
+        
     },
     Iteration,
     Result,
@@ -197,6 +211,7 @@ impl<'a> Page {
                     tools.draw_hole_active = true;
 
                     draw_panel.ignore_input = !tools.draw_active;
+                    draw_panel.polygon.set_pending_none();
                 }
             }
 
@@ -207,7 +222,7 @@ impl<'a> Page {
                     tools.draw_hole_active = false;
                     tools.redo_active = true;
 
-                    if draw_panel.lines != vec![] {
+                    if draw_panel.vertices != vec![] {
                         tools.undo_active = true
                     }
                     else { tools.undo_active = false};
@@ -222,7 +237,7 @@ impl<'a> Page {
                     tools.draw_hole_active = false;
                     tools.undo_active = true;
 
-                    if draw_panel.lines != vec![] {
+                    if draw_panel.vertices != vec![] {
                         tools.redo_active = true
                     }
                     else { tools.redo_active = false};
@@ -232,14 +247,27 @@ impl<'a> Page {
             }
            
             PageMessage::ClearPressed => {
-                if let Page::Menu {  draw_panel, tools, action_buffer, .. } = self {
-                    draw_panel.polygon = DrawState::default();
-                    draw_panel.lines.clear();
-                    draw_panel.vertices.clear();
-                    tools.clear_active = false;
-
-                    action_buffer.push(PageMessage::ClearPressed);
+                if let Page::Menu {  draw_panel, tools, ..} = self {
+                    
+                    tools.popup_clear_open = true;
+                    tools.draw_active = true;
+                    draw_panel.ignore_input = true;
+                    
                 }
+            }
+
+            PageMessage::PopUpClosed | PageMessage::RejectClear => {
+                if let Page::Menu {  tools, draw_panel, ..} = self { 
+                    
+                    tools.popup_clear_open = false;
+                    tools.clear_active = true;
+                    tools.draw_active = true;
+                    tools.draw_hole_active = true;
+                    draw_panel.ignore_input = false;
+                    
+
+                }
+
             }
             
             PageMessage::AddLine(line) => {
@@ -248,7 +276,7 @@ impl<'a> Page {
 
                     tools.clear_active = true;
                     tools.undo_active = true;
-                    draw_panel.lines.push(line);
+                    
                     draw_panel.vertices.push(line.from);
                     draw_panel.vertices.push(line.to);
                     draw_panel.polygon.request_redraw();
@@ -257,6 +285,27 @@ impl<'a> Page {
                     
                 }
 
+            }
+
+            PageMessage::ClearAll => {
+                if let Page::Menu {  draw_panel, tools, action_buffer, undo_buffer, ..} = self { 
+                    tools.popup_clear_open = false;
+
+                    //reactivate buttons
+                    tools.clear_active = false;
+                    tools.draw_active = false;
+                    tools.undo_active = false;
+                    tools.redo_active = false;
+                    tools.draw_hole_active = false;
+
+                    //clearing the input
+                    draw_panel.polygon = DrawState::default();
+                    draw_panel.vertices.clear();
+
+                    //clearing undo and redo
+                    action_buffer.clear();
+                    undo_buffer.clear();
+                }
             }
 
             PageMessage::ConfirmPressed => {
@@ -314,18 +363,25 @@ impl<'a> Page {
     fn menu(tools: &'a mut Tools, progset: &'a mut ProgramSettings, draw_panel: &'a mut DrawPanel, confirm_button: &'a mut button::State) -> Column<'a, PageMessage> {
         
         let button_con = if draw_panel.vertices != vec![] {
-            button(confirm_button, "Confirm").style(style::ButtonStyle::Primary).on_press(PageMessage::ConfirmPressed)
+            button(confirm_button, "Confirm").style(style::ButtonStyle::PrimaryLight).on_press(PageMessage::ConfirmPressed)
         }
         else {
-            button(confirm_button, "Confirm").style(style::ButtonStyle::Primary)
+            button(confirm_button, "Confirm").style(style::ButtonStyle::PrimaryLight)
         };
 
-        let tool_menu: Column<PageMessage> = Column::new() 
-                                                .width(Length::Fill).height(Length::Units(250))
-                                                    .push(Row::new()
-                                                        .push(Rule::vertical(2).style(style::Rule::Ligth))
-                                                        .push(Tools::tool_menu(tools))
-                                                        .push(Rule::vertical(2).style(style::Rule::Ligth)));
+        let mut tool_menu: Column<PageMessage> = Column::new();
+                                                
+            if tools.popup_clear_open {
+                tool_menu = tool_menu.height(Length::Units(400))
+            } else { tool_menu = tool_menu.height(Length::Units(250))}
+        
+            tool_menu = tool_menu
+            .width(Length::Fill)
+            .push(Row::new()
+                .push(Rule::vertical(2).style(style::RuleStyle::Light))
+                .push(Tools::tool_menu(tools))
+                .push(Rule::vertical(2).style(style::RuleStyle::Light)));
+
         let draw_panel: Column<PageMessage> = Column::new()
                                                 .push(DrawPanel::draw_panel(draw_panel)) ;
         let setting_menu: Row<PageMessage> = ProgramSettings::prog_settings(progset);

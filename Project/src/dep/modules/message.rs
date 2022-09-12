@@ -19,8 +19,11 @@ pub enum PageMessage {
     DrawHolePressed,
     UndoPressed,
     RedoPressed,
-    ClearPressed,
+    ClearPressed, //Opens Popup
+    PopUpClosed, //Closes PopUp
     AddLine(Line),
     ConfirmPressed,
+    ClearAll,
+    RejectClear,
  
 }
