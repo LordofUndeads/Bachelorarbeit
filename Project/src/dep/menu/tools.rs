@@ -46,38 +46,63 @@ impl<'a> Tools {
         }
     }
     
-    pub fn tool_menu(tools: &'a mut Tools) -> Column<'a, PageMessage>{
+    pub fn tool_menu(tools: &'a mut Tools, dark_mode: bool) -> Column<'a, PageMessage>{
 
-        //defining buttons with active and inactive style
-        let mut button_d = Column::new();
-        if tools.draw_active {
-            button_d = button_d.push(button(&mut tools.draw_button, "Draw"))
+        //defining buttons with active and inactive style and Dark/Light Mode
+        let mut button_d = button(&mut tools.draw_button, "Draw");
+        if !tools.draw_active {
+            button_d = button_d.on_press(PageMessage::DrawPressed);
         }
-        else {
-            button_d = button_d.push(button(&mut tools.draw_button, "Draw")
-            .on_press(PageMessage::DrawPressed)
-            .style(style::ButtonStyle::SecondaryLight))
-        };
 
-        let mut button_dh = Column::new();
-        if tools.draw_hole_active {
-            button_dh = button_dh.push(button(&mut tools.draw_hole_button, "Draw Hole"))
+        let mut button_dh = button(&mut tools.draw_hole_button, "Draw Hole");
+        if !tools.draw_hole_active {
+            button_dh = button_dh.on_press(PageMessage::DrawHolePressed);
         }
-        else {
-            button_dh = button_dh.push(button(&mut tools.draw_hole_button, "Draw Hole")
-            .on_press(PageMessage::DrawHolePressed)
-            .style(style::ButtonStyle::SecondaryLight))
-        };
+        let mut button_ud = button(&mut tools.undo_button, "Undo");
+        if tools.undo_active {
+            button_ud = button_ud.on_press(PageMessage::UndoPressed);
+        }
 
+        let mut button_rd = button(&mut tools.redo_button, "Redo");
+        if tools.undo_active {
+            button_rd = button_rd.on_press(PageMessage::RedoPressed)
+        }
+
+        let mut button_c = button(&mut tools.clear_button, "Clear");
+        if tools.clear_active {
+            button_c = button_c.on_press(PageMessage::ClearPressed)
+        }
         
-        let mut button_c = Column::new();
+        if dark_mode {
+            button_d = button_d.style(style::ButtonStyle::SecondaryDark);
+            button_dh = button_dh.style(style::ButtonStyle::SecondaryDark);
+            button_ud = button_ud.style(style::ButtonStyle::SecondaryDark);
+            button_rd = button_rd.style(style::ButtonStyle::SecondaryDark);
+            button_c = button_c.style(style::ButtonStyle::SecondaryDark);
+        }
+        else {
+            button_d = button_d.style(style::ButtonStyle::SecondaryLight);
+            button_dh = button_dh.style(style::ButtonStyle::SecondaryLight);
+            button_ud = button_ud.style(style::ButtonStyle::SecondaryLight);
+            button_rd = button_rd.style(style::ButtonStyle::SecondaryLight);
+            button_c = button_c.style(style::ButtonStyle::SecondaryLight);
+        }
+
+        let mut clear_dialogue = Column::new();
         if !tools.clear_active {
-            button_c = button_c.push(button(&mut tools.clear_button, "Clear"))
+            
+            if dark_mode {
+                button_c = button_c.style(style::ButtonStyle::SecondaryDark);
+            }
+            else {
+                button_c = button_c.style(style::ButtonStyle::SecondaryLight);
+            }
+            clear_dialogue = clear_dialogue.push(button_c);
         }
         else {
             //either a button or a popup card depending on the popup_clear_open boolean
             if tools.popup_clear_open {
-                button_c = button_c.push(Card::new(
+                let mut clear_card = Card::new(
                     Text::new("Clear the Draw Panel?").size(20),
                     Column::new()
                         .padding(5)
@@ -108,42 +133,27 @@ impl<'a> Tools {
                 )
                 .height(Length::Units(190))
                 .width(Length::Units(300))
-                .style(style::PopUpStyle::Light)
-                .on_close(PageMessage::PopUpClosed))
+                .on_close(PageMessage::PopUpClosed)
+                .style(style::PopUpStyle::Light);
+
+                if dark_mode {
+                    clear_card = clear_card.style(style::PopUpStyle::Dark);
+                }
+                else {
+                    clear_card = clear_card.style(style::PopUpStyle::Light);
+                    
+                }
+                clear_dialogue = clear_dialogue.push(clear_card);
                 
             }
             else {
-                button_c = button_c.push(button(&mut tools.clear_button, "Clear")
-                    .on_press(PageMessage::ClearPressed)
-                    .style(style::ButtonStyle::SecondaryLight))
-
+                clear_dialogue = clear_dialogue.push(button_c);
             }
             
-        };
-
-        let mut button_ud = Column::new();
-        if tools.undo_active {
-            button_ud = button_ud.push(button(&mut tools.undo_button, "Undo")
-            .on_press(PageMessage::UndoPressed)
-            .style(style::ButtonStyle::SecondaryLight))
-        }
-        else {
-            button_ud = button_ud.push(button(&mut tools.undo_button, "Undo"))
-            
             
         };
 
-        let mut button_rd = Column::new();
-        if tools.undo_active {
-            button_rd = button_rd.push(button(&mut tools.redo_button, "Redo")
-            .on_press(PageMessage::RedoPressed)
-            .style(style::ButtonStyle::SecondaryLight))
-        }
-        else {
-            button_rd = button_rd.push(button(&mut tools.redo_button, "Redo"))
-            
-            
-        };
+       
 
         //the actual layout of the tool menu
         let mut content = Column::new();
@@ -175,7 +185,7 @@ impl<'a> Tools {
             )
             .push(Row::new().spacing(10).align_items(Alignment::Center)
                 .padding(10)
-                .push(button_c)
+                .push(clear_dialogue)
                
             
             )

@@ -1,15 +1,15 @@
-use std::{process::{exit, Termination, ExitCode}, };
-
 use iced::{button, 
     Column, Container,  Element, Length, Row, Sandbox,
-     Settings, Space, Text,  Rule, window, window::Position,  
+     Settings, Space, Text,  Rule, window, window::Position, Alignment, Point
 };
 
 mod dep;
 use dep::{modules::{style, style::button, message::{PageMessage, Message},
-    }, menu::draw_panel};
+    }, };
 
 use dep::menu::{program_settings::ProgramSettings, tools::Tools, draw_panel::{DrawPanel, DrawState}, };
+
+use dep::iteration::preview::{PreviewPanel,PreviewState};
 
 
 
@@ -30,6 +30,7 @@ pub fn main() -> iced::Result {
 }
 pub struct Gui {
     pages: Pages, 
+    dark_mode: bool,
 }
 
 impl Sandbox for Gui {
@@ -38,6 +39,7 @@ impl Sandbox for Gui {
     fn new() -> Gui {
         Gui {
             pages: Pages::new(),
+            dark_mode: false,
             
         }
     }
@@ -53,6 +55,10 @@ impl Sandbox for Gui {
             if step_msg == PageMessage::ConfirmPressed {
                 self.pages.advance()
             }
+            else if step_msg == PageMessage::DarkModeToggled(!self.dark_mode){
+                self.dark_mode = !self.dark_mode;
+                self.pages.update(step_msg, );
+            }
             else{
                 self.pages.update(step_msg, );
             }
@@ -64,6 +70,7 @@ impl Sandbox for Gui {
     fn view(&mut self) -> Element<Message> {
         let Gui {
             pages: steps,
+            dark_mode,
             ..
         } = self;
 
@@ -78,12 +85,19 @@ impl Sandbox for Gui {
       
             .into();
 
-        Container::new(content)
+        let mut container = Container::new(content)
             .height(Length::Fill)
             .center_y()
-            .width(Length::Fill)
-            .style(style::WindowStyle::Light)
-            .into()
+            .width(Length::Fill);
+            
+            if *dark_mode {
+               container = container.style(style::WindowStyle::Dark);
+            } 
+            else { 
+                container = container.style(style::WindowStyle::Light);}
+
+        container.into()
+           
     }
 }
 
@@ -91,7 +105,7 @@ impl Sandbox for Gui {
 
 struct Pages {
     pages: Vec<Page>,
-    current: usize,
+    current_page: usize,
 }
 
 impl Pages {
@@ -105,27 +119,45 @@ impl Pages {
                     confirm_button: button::State::new(),
                     undo_buffer: vec![],
                     action_buffer: vec![],
+                    dark_mode: false
                 
                 },
-                Page::Iteration,
-                Page::Result,
+                Page::Iteration {
+                    preview_panel: PreviewPanel::new(),
+                    dark_mode: false, 
+                    prevoius_button: button::State::new(),
+                    next_button: button::State::new(),
+                    current: 1,
+                    
+                },
+                Page::Result {
+                    dark_mode: false,
+                },
              
             ],
-            current: 0,
+            current_page: 0,
         }
     }
 
     fn update(&mut self, msg: PageMessage, ) {
-        self.pages[self.current].update(msg, );
+        self.pages[self.current_page].update(msg, );
     }
 
     fn view(&mut self) -> Element<PageMessage> {
-        self.pages[self.current].view()
+        self.pages[self.current_page].view()
     }
 
     fn advance(&mut self) {
         if self.can_continue() {
-            self.current += 1;
+
+            //copying vertices from one page to the next page for preview purposes
+            
+            let mut buffer = self.pages[self.current_page].get_vertex_buffer();
+            self.pages[self.current_page +1].set_vertex_buffer(&mut buffer);
+            
+
+            //advance to netx page
+            self.current_page += 1;
         }
     }
 
@@ -140,14 +172,17 @@ impl Pages {
     // }
 
     fn can_continue(&self) -> bool {
-        self.current + 1 < self.pages.len()
-            && self.pages[self.current].can_continue()
+        self.current_page + 1 < self.pages.len()
+            && self.pages[self.current_page].can_continue()
     }
 
     fn title(&self) -> &str {
-        self.pages[self.current].title()
+        self.pages[self.current_page].title()
     }
+
+   
 }
+
 
 enum Page {
 
@@ -158,10 +193,19 @@ enum Page {
         confirm_button: button::State,
         undo_buffer: Vec<PageMessage>,
         action_buffer: Vec<PageMessage>,
+        dark_mode: bool,
+    },
+    Iteration {
+        preview_panel: PreviewPanel,
+        prevoius_button: button::State,
+        next_button: button::State,
+        dark_mode: bool,
+        current: i16,
         
     },
-    Iteration,
-    Result,
+    Result {
+        dark_mode: bool,
+    },
 
 }
 
@@ -309,15 +353,33 @@ impl<'a> Page {
             }
 
             PageMessage::ConfirmPressed => {
-                
+                //conversion to grid and execute algorithm with heuristc and settings
+               
             }
 
-            // PageMessage::BackPressed => {
-            //     self.pages.go_back();
-            // }
-            // PageMessage::NextPressed => {
-            //     self.pages.advance();
+            PageMessage::DarkModeToggled(_dark_mode) => {
+                if let Page::Menu {progset, ..} = self {
+                    
+                    progset.bools.dark_mode = _dark_mode;
+                    
+                }
+            }
 
+            PageMessage::PreviousPressed => {
+               
+            }
+            PageMessage::NextPressed => {
+                
+                if let Page::Iteration { preview_panel, current , ..} = self {
+                    
+                    *current = *current + 1;
+
+                    preview_panel.polygon.request_redraw()
+                }
+
+            }
+
+            //end button instead of next button if stepcount == max_steps
 
         };
     }
@@ -326,27 +388,29 @@ impl<'a> Page {
     fn title(&self) -> &str {
         match self {
             Page::Menu { .. } => "Triangulation for Polygons - Menu",
-            Page::Iteration => "Triangulation for Polygons - Algorithm Iteration",
-            Page::Result => "Triangulation for Polygons - Result",
+            Page::Iteration { .. }=> "Triangulation for Polygons - Algorithm Iteration",
+            Page::Result { .. }=> "Triangulation for Polygons - Result",
         }
     }
 
     fn can_continue(&self) -> bool {
         match self {
             Page::Menu { draw_panel, .. } => if draw_panel.vertices != vec![] { true} else { false},
-            Page::Iteration => true,
-            Page::Result => false,
+            Page::Iteration { .. }=> true,
+            Page::Result { .. }=> false,
 
         }
     }
 
     fn view(&mut self) -> Element<PageMessage> {
         match self {
-            Page::Menu { tools, progset, draw_panel, confirm_button, ..} =>
-                Self::menu(tools, progset, draw_panel, confirm_button),
+            Page::Menu { tools, progset, draw_panel, confirm_button, dark_mode ,..} 
+                => Self::menu(tools, progset, draw_panel, confirm_button, dark_mode),
 
-            Page::Iteration => Self::iteration(),
-            Page::Result => Self::result(),
+            Page::Iteration { preview_panel, dark_mode, prevoius_button, next_button, 
+                current: current_step,  }
+                => Self::iteration( preview_panel, prevoius_button, next_button, *dark_mode, *current_step, ),
+            Page::Result { .. }=> Self::result(),
 
         }
         .into()
@@ -356,18 +420,48 @@ impl<'a> Page {
         Column::new().spacing(20).push(Text::new(title).size(50))
     }
 
+    fn get_vertex_buffer(&mut self) -> Vec<Point> {
+        match self {
+            Page::Menu { draw_panel, .. } => {
+                (*draw_panel.vertices).to_vec()
+            }
+            Page::Iteration { preview_panel, .. } => {
+                (*preview_panel.vertices).to_vec()
+            }
+            Page::Result { .. } => {
+                vec![]
+            }
+        }
+    }
 
-    
+    fn set_vertex_buffer(&mut self, vertex_buffer: &mut Vec<Point>)  {
+        match self {
+            Page::Menu { .. } => {
+            }
+            Page::Iteration { preview_panel, .. } => {
+               preview_panel.vertices.append(vertex_buffer);
+            }
+            Page::Result { .. } => {
+                //result_view.vertices = vertex_buffer
+            }
+        }
+    }
 
 
-    fn menu(tools: &'a mut Tools, progset: &'a mut ProgramSettings, draw_panel: &'a mut DrawPanel, confirm_button: &'a mut button::State) -> Column<'a, PageMessage> {
+    fn menu(tools: &'a mut Tools, progset: &'a mut ProgramSettings, draw_panel: &'a mut DrawPanel, confirm_button: &'a mut button::State,
+            dark_mode: &mut bool,) -> Column<'a, PageMessage> {
         
-        let button_con = if draw_panel.vertices != vec![] {
-            button(confirm_button, "Confirm").style(style::ButtonStyle::PrimaryLight).on_press(PageMessage::ConfirmPressed)
+        let mut button_con = button(confirm_button, "Confirm");
+        if draw_panel.vertices != vec![] {
+            button_con = button_con.on_press(PageMessage::ConfirmPressed)
+        }
+        
+        if *dark_mode {
+            button_con = button_con.style(style::ButtonStyle::PrimaryDark);
         }
         else {
-            button(confirm_button, "Confirm").style(style::ButtonStyle::PrimaryLight)
-        };
+            button_con = button_con.style(style::ButtonStyle::PrimaryLight);
+        }
 
         let mut tool_menu: Column<PageMessage> = Column::new();
                                                 
@@ -379,11 +473,11 @@ impl<'a> Page {
             .width(Length::Fill)
             .push(Row::new()
                 .push(Rule::vertical(2).style(style::RuleStyle::Light))
-                .push(Tools::tool_menu(tools))
+                .push(Tools::tool_menu(tools, progset.bools.dark_mode))
                 .push(Rule::vertical(2).style(style::RuleStyle::Light)));
 
         let draw_panel: Column<PageMessage> = Column::new()
-                                                .push(DrawPanel::draw_panel(draw_panel)) ;
+                                                .push(DrawPanel::draw_panel(draw_panel, dark_mode)) ;
         let setting_menu: Row<PageMessage> = ProgramSettings::prog_settings(progset);
         Self::container("")
         .max_width(1280)
@@ -410,27 +504,42 @@ impl<'a> Page {
           
     }
 
-    fn iteration() -> Column<'a, PageMessage> {
-        Self::container("Placeholder Iteration")
-        // let mut controls = Row::new();
+    fn iteration(preview_panel: &'a mut PreviewPanel, previous_button: &'a mut button::State, next_button: &'a mut button::State, dark_mode: bool,
+                current_step: i16, ) 
+        -> Column<'a, PageMessage> {
+        
+        let max_steps = preview_panel.vertices.len() - 2;
 
-        // if steps.has_previous() {
-        //     controls = controls.push(
-        //         button(back_button, "Back")
-        //             .on_press(Message::BackPressed)
-        //             .style(style::Button::Secondary),
-        //     );
-        // }
+        let mut button_prev = button(previous_button, "Back").on_press(PageMessage::PreviousPressed);
+        let mut button_next = button(next_button, "Next").on_press(PageMessage::NextPressed);
+        
+        let preview = Row::new().push(PreviewPanel::preview_panel(preview_panel, dark_mode));
 
-        // controls = controls.push(Space::with_width(Length::Fill));
+        if dark_mode {
+            button_prev = button_prev.style(style::ButtonStyle::SecondaryDark);
+            button_next = button_next.style(style::ButtonStyle::PrimaryDark);
 
-        // if steps.can_continue() {
-        //     controls = controls.push(
-        //         button(next_button, "Next")
-        //             .on_press(Message::NextPressed)
-        //             .style(style::Button::Primary),
-        //     );
-        // }
+        }else {
+            button_prev = button_prev.style(style::ButtonStyle::SecondaryLight);
+            button_next = button_next.style(style::ButtonStyle::PrimaryLight);
+        }
+        
+        let stepcount = format!("Iteration Step {}/{}", current_step, max_steps);
+
+        let mut controls = Row::new().spacing(450).align_items(Alignment::Center);
+
+        //if steps.has_previous() {
+            controls = controls.push(button_prev);
+        //}
+            controls = controls.push(Text::new(stepcount).size(22));
+        //controls = controls.push(Space::with_width(Length::Fill));
+
+        //if steps.can_continue() {
+            controls = controls.push(button_next);
+        //}
+        
+        Self::container("").push(preview).push(controls)
+        
     }
 
     fn result() -> Column<'a, PageMessage> {

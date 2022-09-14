@@ -9,8 +9,8 @@ pub enum Message {
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum PageMessage {
-    // BackPressed,
-    // NextPressed,
+    PreviousPressed,
+    NextPressed,
     AlgorithmSelected(Algorithm),
     HeuristicSelected(Heuristic),
     EdgeSwappingToggled(bool),
@@ -25,5 +25,6 @@ pub enum PageMessage {
     ConfirmPressed,
     ClearAll,
     RejectClear,
+    DarkModeToggled(bool),
  
 }

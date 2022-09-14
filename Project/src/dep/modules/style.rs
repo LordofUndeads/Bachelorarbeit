@@ -29,7 +29,7 @@ use iced_aw::card;
                     ButtonStyle::SecondaryLight => Color::from_rgb(0.5, 0.5, 0.5),
                     ButtonStyle::SecondaryDark => Color::from_rgb(0.5, 0.5, 0.5),
                     ButtonStyle::Green => Color::from_rgb8(0x32, 0xcd, 0x32),
-                    ButtonStyle::Red => Color::from_rgb8(0x8b, 0x00, 0x00)
+                    ButtonStyle::Red => Color::from_rgb8(0x8b, 0x00, 0x00),
                 })),
                 border_radius: 12.0,
                 shadow_offset: Vector::new(1.0, 1.0),
@@ -114,10 +114,13 @@ use iced_aw::card;
                     PopUpStyle::Light => Color::from_rgb(0.5, 0.5, 0.5),
                     PopUpStyle::Dark => Color::from_rgb(0.5, 0.5, 0.5),
                 }, 
-                // head_background: (), 
-                // head_text_color: (), 
+                head_background: Background::Color(Color::from_rgb(0.5, 0.5, 0.5)), 
+                head_text_color: Color::from_rgb8(0xEE, 0xEE, 0xEE), 
                 // body_background: ().
-                // body_text_color: (), 
+                body_text_color: match self {
+                    PopUpStyle::Light => Color::from_rgb8(0x57, 0x57, 0x57),
+                    PopUpStyle::Dark => Color::WHITE,
+                },  
                 // foot_background: (), 
                 // foot_text_color: (), 
                 // close_color: () }

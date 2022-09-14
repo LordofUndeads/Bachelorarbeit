@@ -15,6 +15,7 @@ pub struct DrawState {
 pub struct DrawPanel {
    pub polygon: DrawState,
    pub vertices: Vec<Point>,
+   pub over_first_vertex: bool,
    pub ignore_input: bool,
 }
 
@@ -25,28 +26,30 @@ impl<'a> DrawPanel {
                 pending: None, 
                 cache: canvas::Cache::new() }, 
             vertices: vec![],
+            over_first_vertex: false,
             ignore_input: true,
         }
     }
 
-    pub fn draw_panel(draw_panel: &'a mut DrawPanel) -> Column<'a, PageMessage>{
+    pub fn draw_panel(draw_panel: &'a mut DrawPanel, dark_mode: &mut bool) -> Column<'a, PageMessage>{
         Column::new()
         .padding(0)
         .spacing(0)
         
         
-        .push(draw_panel.polygon.view((draw_panel.vertices).to_vec(), draw_panel.ignore_input).map(PageMessage::AddLine))
+        .push(draw_panel.polygon.view((draw_panel.vertices).to_vec(), draw_panel.ignore_input, draw_panel.over_first_vertex).map(PageMessage::AddLine))
         
         .into()
     }
 }
 
 impl DrawState {
-    pub fn view<'a>(&'a mut self,  vertices: Vec<Point>, ignore_input: bool) -> Element<'a, Line> {
+    pub fn view<'a>(&'a mut self,  vertices: Vec<Point>, ignore_input: bool, over_first_vertex: bool) -> Element<'a, Line> {
         Canvas::new(PolygonOutLine {
             state: self,
             
             vertices,
+            over_first_vertex,
             ignore_input, 
         })
         .width(Length::Units(600))
@@ -66,7 +69,7 @@ impl DrawState {
 struct PolygonOutLine<'a> {
    pub state: &'a mut DrawState,
    pub vertices: Vec<Point>,
-   
+   pub over_first_vertex: bool,
    pub ignore_input: bool,
 }
 
@@ -84,18 +87,54 @@ impl<'a> canvas::Program<Line> for PolygonOutLine<'a> {
                 return (event::Status::Ignored, None);
             };
 
-        match event {
+         match event {
+        //     Event::Mouse(mouse_hover) => {
+        //         let message = match mouse_hover {
+        //             mouse::Event::CursorMoved { position } => {
+        //                 match self.state.pending {
+        //                     None => {
+        //                        self.over_first_vertex = check_vertex_bounds(self.vertices[0], position);
+                                
+        //                         None
+        //                     }
+        //                     Some(Pending::WaitSndInput { .. } ) => {
+        //                         None
+        //                     }
+        //                     Some(Pending::LoopScdInput { .. }) => {
+        //                         None
+        //                     }
+        //                     Some(Pending::ClipToStartVertex { .. }) => {
+        //                         None
+        //                     }
+        //                     Some(Pending::ConnectToLastVertex { .. }) => {
+        //                         None
+        //                     }
+
+        //                 }
+        //             } _ => None
+                    
+        //         };
+        //         (event::Status::Captured, message)
+        //     } 
+
+
             Event::Mouse(mouse_event) => {
                 let message = match mouse_event {
                         
-
                     mouse::Event::ButtonPressed(mouse::Button::Left) => {
                         match self.state.pending {
                             None => {
+                                if self.over_first_vertex {
+                                    self.state.pending = Some(Pending::ClipToStartVertex  {
+                                        connector: self.vertices[0]
+                                    });
+                                }
+                                else {
+                                    self.state.pending = Some(Pending::WaitSndInput {
+                                        from: cursor_position,
+                                    });
+                                }
                                 
-                                self.state.pending = Some(Pending::WaitSndInput {
-                                    from: cursor_position,
-                                });
 
                                 None
                             }

@@ -13,11 +13,12 @@ pub struct ProgramSettings {
 pub struct ProgramSettingsBools {
     pub edgeswapping_active: bool,
     pub stepwise_active: bool,
+    pub dark_mode: bool,
 }
 
 impl<'a> ProgramSettingsBools {
     pub fn new() -> Self {
-        ProgramSettingsBools { edgeswapping_active: false, stepwise_active: true }
+        ProgramSettingsBools { edgeswapping_active: false, stepwise_active: true , dark_mode: false}
     }
 }
 
@@ -46,6 +47,7 @@ impl<'a> ProgramSettings{
     }
 
     fn alg_select(selection: Option<Algorithm>) -> Column<'a, PageMessage>{
+        
         let alg_choices = Column::new()
                 .padding(0)
                 .spacing(10)
@@ -120,7 +122,15 @@ impl<'a> ProgramSettings{
                         String::from("Stepwise Triangulation"),
                             PageMessage::StepTrigToggled,
                             ).size(15).text_size(20))
+                    //Toggler for Dark Mode
+                        .push(Space::with_height(Length::Fill))
+                        .push(Toggler::new(
+                        bools.dark_mode,
+                                String::from("Dark Mode"),
+                                    PageMessage::DarkModeToggled,
+                                    ).size(15).text_size(20))
                         )
+                    
                     .push(Column::new().width(Length::FillPortion(2))
                         .push(Space::with_width(Length::FillPortion(2))))
 
