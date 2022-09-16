@@ -3,7 +3,7 @@ use super::super::modules::{geometry::{Line, Circle},message::PageMessage};
 use iced::{
     canvas::event::{self, Event, },
     canvas::{self, Canvas, Cursor, Frame, Geometry, Path, Stroke, Fill},
-    mouse, Point, Rectangle, Column, Length, Element, Size
+    mouse, Point, Rectangle, Column, Length, Element, Size, Alignment
 };
 
 #[derive(Default)]
@@ -34,21 +34,21 @@ impl<'a> PreviewPanel {
         Column::new()
         .padding(0)
         .spacing(0)
-        
-        .push(preview_panel.polygon.view((preview_panel.vertices).to_vec(), preview_panel.ignore_input).map(PageMessage::AddLine))
+        .align_items(Alignment::Center)
+        .push(preview_panel.polygon.view((preview_panel.vertices).to_vec(), preview_panel.ignore_input).map(PageMessage::AddPoint))
         
         .into()
     }
 }
 
 impl PreviewState {
-    pub fn view<'a>(&'a mut self,  vertices: Vec<Point>, ignore_input: bool, ) -> Element<'a, Line> {
+    pub fn view<'a>(&'a mut self,  vertices: Vec<Point>, ignore_input: bool, ) -> Element<'a, Point> {
         Canvas::new(PreviewPolygonOutLine {
             state: self,
             vertices,
             ignore_input, 
         })
-        .width(Length::Units(1200))
+        .width(Length::Units(1280))
         .height(Length::Units(500))
         .into()
     }
@@ -69,8 +69,8 @@ struct PreviewPolygonOutLine<'a> {
    pub ignore_input: bool,
 }
 
-impl<'a> canvas::Program<Line> for PreviewPolygonOutLine<'a> {
-    fn update(&mut self, event: Event, bounds: Rectangle, cursor: Cursor) -> (event::Status, Option<Line>) {
+impl<'a> canvas::Program<Point> for PreviewPolygonOutLine<'a> {
+    fn update(&mut self, event: Event, bounds: Rectangle, cursor: Cursor) -> (event::Status, Option<Point>) {
         let cursor_position =
             if self.ignore_input {
                 return (event::Status::Ignored, None);
@@ -149,7 +149,7 @@ impl<'a> canvas::Program<Line> for PreviewPolygonOutLine<'a> {
         let content =
             self.state.cache.draw(bounds.size(), |frame: &mut Frame| {
                 Line::draw_all(&self.vertices, frame);
-                Circle::draw_all(&self.vertices, 1.0,frame);
+                Circle::draw_all(&self.vertices, 3.0,frame);
                 frame.stroke(
                     &Path::rectangle(Point::ORIGIN, frame.size()),
                     Stroke::default(),
@@ -219,15 +219,3 @@ impl Pending {
     }
 }
 
-// // helper function to check if the cursor is in a square around a vertex of the polygon or not
-// fn check_vertex_bounds(vertex: Point, cursor_position: Point) -> bool {
-    
-//     if cursor_position.x > vertex.x - 0.5 && cursor_position.x < vertex.x + 0.5 {
-//         if cursor_position.y > vertex.y - 0.5 && cursor_position.y < vertex.y + 0.5 {
-//             return true;
-//         }
-//         else { return false; }
-//     }
-//     else { return false; }
-   
-// }

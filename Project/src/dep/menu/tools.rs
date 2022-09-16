@@ -64,7 +64,7 @@ impl<'a> Tools {
         }
 
         let mut button_rd = button(&mut tools.redo_button, "Redo");
-        if tools.undo_active {
+        if tools.redo_active {
             button_rd = button_rd.on_press(PageMessage::RedoPressed)
         }
 

@@ -3,7 +3,7 @@ use super::super::modules::{geometry::{Line, Circle},message::PageMessage};
 use iced::{
     canvas::event::{self, Event, },
     canvas::{self, Canvas, Cursor, Frame, Geometry, Path, Stroke, Fill},
-    mouse, Point, Rectangle, Column, Length, Element, Size
+    mouse, Point, Rectangle, Column, Length, Element,  Color
 };
 
 #[derive(Default)]
@@ -15,7 +15,8 @@ pub struct DrawState {
 pub struct DrawPanel {
    pub polygon: DrawState,
    pub vertices: Vec<Point>,
-   pub over_first_vertex: bool,
+ 
+   pub closed: bool,
    pub ignore_input: bool,
 }
 
@@ -26,30 +27,29 @@ impl<'a> DrawPanel {
                 pending: None, 
                 cache: canvas::Cache::new() }, 
             vertices: vec![],
-            over_first_vertex: false,
+
+            closed: false,
             ignore_input: true,
         }
     }
 
-    pub fn draw_panel(draw_panel: &'a mut DrawPanel, dark_mode: &mut bool) -> Column<'a, PageMessage>{
+    pub fn draw_panel(draw_panel: &'a mut DrawPanel, ) -> Column<'a, PageMessage>{
         Column::new()
         .padding(0)
         .spacing(0)
-        
-        
-        .push(draw_panel.polygon.view((draw_panel.vertices).to_vec(), draw_panel.ignore_input, draw_panel.over_first_vertex).map(PageMessage::AddLine))
+  
+        .push(draw_panel.polygon.view((draw_panel.vertices).to_vec(), draw_panel.ignore_input,  draw_panel.closed).map(PageMessage::AddPoint))
         
         .into()
     }
 }
 
 impl DrawState {
-    pub fn view<'a>(&'a mut self,  vertices: Vec<Point>, ignore_input: bool, over_first_vertex: bool) -> Element<'a, Line> {
+    pub fn view<'a>(&'a mut self,  vertices: Vec<Point>, ignore_input: bool, closed: bool) -> Element<'a, Point> {
         Canvas::new(PolygonOutLine {
             state: self,
-            
             vertices,
-            over_first_vertex,
+            closed,
             ignore_input, 
         })
         .width(Length::Units(600))
@@ -64,17 +64,24 @@ impl DrawState {
     pub fn set_pending_none(&mut self) {
         self.pending = None;
     }
+
+    pub fn set_pending_waitinput(&mut self, vertex: Point) {
+        self.pending = Some(Pending::WaitSndInput { from: (vertex)});
+    }
 }
 
 struct PolygonOutLine<'a> {
    pub state: &'a mut DrawState,
    pub vertices: Vec<Point>,
-   pub over_first_vertex: bool,
+   pub closed: bool,
    pub ignore_input: bool,
 }
 
-impl<'a> canvas::Program<Line> for PolygonOutLine<'a> {
-    fn update(&mut self, event: Event, bounds: Rectangle, cursor: Cursor) -> (event::Status, Option<Line>) {
+impl<'a> canvas::Program<Point> for PolygonOutLine<'a> {
+    fn update(&mut self, event: Event, bounds: Rectangle, cursor: Cursor) -> (event::Status, Option<Point>) {
+        
+        let mut over_first_vertex = false;
+        
         let cursor_position =
             if self.ignore_input {
                 return (event::Status::Ignored, None);
@@ -87,36 +94,13 @@ impl<'a> canvas::Program<Line> for PolygonOutLine<'a> {
                 return (event::Status::Ignored, None);
             };
 
+            if self.vertices.len() > 1 {
+                if check_vertex_bounds(self.vertices[0], cursor_position) {
+                    over_first_vertex = true;
+                }
+            }
+
          match event {
-        //     Event::Mouse(mouse_hover) => {
-        //         let message = match mouse_hover {
-        //             mouse::Event::CursorMoved { position } => {
-        //                 match self.state.pending {
-        //                     None => {
-        //                        self.over_first_vertex = check_vertex_bounds(self.vertices[0], position);
-                                
-        //                         None
-        //                     }
-        //                     Some(Pending::WaitSndInput { .. } ) => {
-        //                         None
-        //                     }
-        //                     Some(Pending::LoopScdInput { .. }) => {
-        //                         None
-        //                     }
-        //                     Some(Pending::ClipToStartVertex { .. }) => {
-        //                         None
-        //                     }
-        //                     Some(Pending::ConnectToLastVertex { .. }) => {
-        //                         None
-        //                     }
-
-        //                 }
-        //             } _ => None
-                    
-        //         };
-        //         (event::Status::Captured, message)
-        //     } 
-
 
             Event::Mouse(mouse_event) => {
                 let message = match mouse_event {
@@ -124,56 +108,59 @@ impl<'a> canvas::Program<Line> for PolygonOutLine<'a> {
                     mouse::Event::ButtonPressed(mouse::Button::Left) => {
                         match self.state.pending {
                             None => {
-                                if self.over_first_vertex {
-                                    self.state.pending = Some(Pending::ClipToStartVertex  {
-                                        connector: self.vertices[0]
-                                    });
+                               
+                               
+                                self.state.pending = Some(Pending::WaitSndInput {
+                                        from: cursor_position
+                                                        });
+                               
+                                Some(Point {
+                                    x: cursor_position.x,
+                                    y: cursor_position.y
+                                })
+                            }
+                            Some(Pending::WaitSndInput { .. }) => {
+
+                                if over_first_vertex {
+
+                                    if let Some(from) = self.vertices.first() {
+                                        if let Some(to) = self.vertices.last() { 
+                                            
+                                            self.closed = true;
+                                            self.ignore_input = true;
+                                            self.state.request_redraw();
+                                            self.state.pending = Some(Pending::ClipToStartVertex{
+                                                last: *from, 
+                                                first: *to
+                                            });
+                                        }
+                                    }   
+                                    
+                                    None
+                                   
                                 }
                                 else {
                                     self.state.pending = Some(Pending::WaitSndInput {
+                                    
                                         from: cursor_position,
                                     });
+                                    
+                                    Some(Point {
+                                        x: cursor_position.x,
+                                        y: cursor_position.y
+                                    })
+                                    
                                 }
                                 
 
+                           
+                            }
+
+                            Some(Pending::ClipToStartVertex { .. } )=> {
+                                
                                 None
                             }
-                            Some(Pending::WaitSndInput { from }) => {
-                                self.state.pending = Some(Pending::LoopScdInput {
-                                    from,
-                                    to: cursor_position,
-                                });
 
-                               None
-                            }
-                            Some(Pending::LoopScdInput { from, to }) => {
-                                self.state.pending = Some(Pending::LoopScdInput {
-                                    from: to,
-                                    to: cursor_position,
-                                });
-                                Some(Line {
-                                    from,
-                                    to,
-                                })
-                            }
-
-                            Some(Pending::ClipToStartVertex { connector }) => {
-                                self.state.pending= Some(Pending::LoopScdInput { 
-                                    from: connector, 
-                                    to: cursor_position });
-                                Some(Line {
-                                    from: connector,
-                                    to: cursor_position,
-                                })
-                            }
-
-                            Some(Pending::ConnectToLastVertex { from }) => {
-                                
-                                Some(Line {
-                                    from,
-                                    to: cursor_position,
-                                })
-                            }
                             
                         }
                     }
@@ -192,7 +179,15 @@ impl<'a> canvas::Program<Line> for PolygonOutLine<'a> {
         let content =
             self.state.cache.draw(bounds.size(), |frame: &mut Frame| {
                 Line::draw_all(&self.vertices, frame);
-                Circle::draw_all(&self.vertices, 1.0,frame);
+                Circle::draw_all(&self.vertices, 3.0,frame);
+                if self.vertices.len() > 2 && self.closed == false {
+                    Circle::draw_unfilled(self.vertices[0], 5.0, frame);
+                }
+                if self.closed {
+                    if let Some(from) = self.vertices.first() {
+                        if let Some(to) = self.vertices.last() { 
+                            Line::draw(*from, *to, frame);}}   
+                }
                 frame.stroke(
                     &Path::rectangle(Point::ORIGIN, frame.size()),
                     Stroke::default(),
@@ -227,10 +222,8 @@ impl<'a> canvas::Program<Line> for PolygonOutLine<'a> {
 #[derive(Debug, Clone, Copy)]
 enum Pending {
     WaitSndInput { from: Point },
-    ClipToStartVertex { connector: Point},
-    LoopScdInput { from: Point, to: Point },
-    ConnectToLastVertex {from: Point},
-
+    ClipToStartVertex {last: Point, first: Point},
+   
 }
 
 impl Pending {
@@ -242,34 +235,25 @@ impl Pending {
 
                 Pending::WaitSndInput { from } => {
                     
-                    let circle = Path::circle(from, 1.0);
+                    let circle = Path::circle(from, 3.0);
                     let line = Path::line(from, cursor_position);
                     frame.stroke(&line, Stroke::default().with_width(2.0));
-                    frame.stroke(&circle, Stroke::default().with_width(2.0));
-                    
-                }
+                    frame.fill(&circle, Fill { color: Color::BLACK, rule: canvas::FillRule::NonZero});
 
-                Pending::LoopScdInput { from, to } => {
-                    let line = Path::line(to, cursor_position);
-                    let circle = Path::circle(to, 1.0);
-                    frame.stroke(&line, Stroke::default().with_width(2.0));
-                    frame.stroke(&circle, Stroke::default().with_width(2.0));
-                    
-                    let vertices: Vec<Point> = vec![from, to];              
+                    let vertices: Vec<Point> = vec![from, cursor_position];              
 
-                    Circle::draw_all(&vertices,1.0, &mut frame);
+                    Circle::draw_all(&vertices,3.0, &mut frame);
                     Line::draw_all(&vertices, &mut frame);
+                    
                 }
 
-                Pending::ClipToStartVertex { connector } => {
-                    let circle = Path::circle(connector, 3.0);
-                    frame.stroke(&circle, Stroke::default().with_width(2.0));
+                Pending::ClipToStartVertex {last, first }=> {
+
+                            let line = Path::line(last,first);
+                            frame.stroke(&line, Stroke::default().with_width(2.0));   
+                   
                 }
 
-                Pending::ConnectToLastVertex { from } => {
-
-                }
-                
             };
         }
 
@@ -280,8 +264,8 @@ impl Pending {
 // helper function to check if the cursor is in a square around a vertex of the polygon or not
 fn check_vertex_bounds(vertex: Point, cursor_position: Point) -> bool {
     
-    if cursor_position.x > vertex.x - 0.5 && cursor_position.x < vertex.x + 0.5 {
-        if cursor_position.y > vertex.y - 0.5 && cursor_position.y < vertex.y + 0.5 {
+    if cursor_position.x > vertex.x - 4.0 && cursor_position.x < vertex.x + 4.0 {
+        if cursor_position.y > vertex.y - 4.0 && cursor_position.y < vertex.y + 4.0 {
             return true;
         }
         else { return false; }

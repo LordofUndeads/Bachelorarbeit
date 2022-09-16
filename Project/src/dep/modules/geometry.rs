@@ -1,7 +1,7 @@
 use iced::{
    
-    canvas::{ Frame, Path, Stroke, Fill},
-    Point,
+    canvas::{ Frame, Path, Stroke, Fill, FillRule},
+    Point, Color
 };
 
 
@@ -47,6 +47,10 @@ impl Line {
         }
         return lines;
     }
+
+    pub fn draw(from: Point, to: Point, frame: &mut Frame) {
+        frame.stroke(&Path::line(from, to), Stroke::default().with_width(2.0));
+    }
 }
 
 impl Circle {
@@ -62,6 +66,10 @@ impl Circle {
     }
 
     pub fn draw(vertex: Point, radius: f32, frame: &mut Frame) {
-        frame.stroke(&Path::circle(vertex, radius), Stroke::default());
+        frame.fill(&Path::circle(vertex, radius), Fill {color: Color::BLACK, rule: FillRule::NonZero });
+    }
+
+    pub fn draw_unfilled(vertex: Point, radius: f32, frame: &mut Frame) {
+        frame.stroke(&Path::circle(vertex, radius), Stroke::default().with_width(2.0));
     }
 }

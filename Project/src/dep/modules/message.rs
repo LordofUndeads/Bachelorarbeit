@@ -1,30 +1,41 @@
 
-use super::{algorithm::Algorithm, heuristic::Heuristic, geometry::Line};
+use super::{algorithm::Algorithm, heuristic::Heuristic};
+use iced::Point;
 
 #[derive(Debug, Clone)]
 pub enum Message {
-    
     PageMessage(PageMessage),
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Copy)]
 pub enum PageMessage {
-    PreviousPressed,
-    NextPressed,
+    //Messegaes needed for inteactions on the menu page
+    
+    //options
     AlgorithmSelected(Algorithm),
     HeuristicSelected(Heuristic),
     EdgeSwappingToggled(bool),
     StepTrigToggled(bool),
+    DarkModeToggled(bool),
+
+    //Drawing tools
     DrawPressed,
     DrawHolePressed,
     UndoPressed,
     RedoPressed,
     ClearPressed, //Opens Popup
     PopUpClosed, //Closes PopUp
-    AddLine(Line),
+    AddPoint(Point),
     ConfirmPressed,
     ClearAll,
     RejectClear,
-    DarkModeToggled(bool),
- 
+    
+    //Messages for interactions on the iteratiuon page
+    PreviousPressed,
+    NextPressed,
+    EndPressed,
+
+    //Messages for interactions on the result page
+    ExitPressed,
+    RepeatPressed,
 }
