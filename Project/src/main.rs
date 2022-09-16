@@ -1,19 +1,17 @@
 use iced::{button, 
     Column, Container,  Element, Length, Row, Sandbox,
-     Settings, Space, Text,  Rule, window, window::Position, Alignment, Point
+     Settings, Space, Text,  Rule, window, window::Position, Alignment, Point, 
 };
-
+use num_traits::cast::ToPrimitive;
 mod dep;
 use dep::{modules::{style, style::button, message::{PageMessage, Message},
-    }, };
+    },  };
 
 use dep::menu::{program_settings::ProgramSettings, tools::Tools, draw_panel::{DrawPanel, DrawState}, };
 
 use dep::iteration::preview::PreviewPanel;
 
 use dep::result::result_view::ResultPanel;
-
-
 
 
 pub fn main() -> iced::Result {
@@ -54,8 +52,12 @@ impl Sandbox for Gui {
         match event {
            
             Message::PageMessage(step_msg) => 
-            if step_msg == PageMessage::ConfirmPressed || step_msg == PageMessage::EndPressed {
+            if step_msg == PageMessage::ConfirmPressed || step_msg == PageMessage::EndPressed 
+            {
                 self.pages.advance()
+            }
+            else if step_msg == PageMessage::RepeatPressed {
+                self.pages.return_to_menu()
             }
             else if step_msg == PageMessage::DarkModeToggled(!self.dark_mode){
                 self.dark_mode = !self.dark_mode;
@@ -157,6 +159,8 @@ impl Pages {
     fn advance(&mut self) {
         if self.can_continue() {
 
+            
+           
             //copying vertices from one page to the next page for preview purposes
             
             let mut buffer = self.pages[self.current_page].get_vertex_buffer();
@@ -164,39 +168,50 @@ impl Pages {
             match self.current_page {
                 //Menu Page
                 0 => {
-                    //Offsets:
+                    //Offsets example:
                     //x: width of draw_panel = 600         | y: height of draw_panel = 400
                     //   width of preview_panel = 1280     |    height of preview_panel = 500
                     // => offset_x = (1280 - 600)/ 2 = 340 | => offset_y = (500 - 400)/2 = 50
-                    buffer = Page::buffer_move_center(buffer, 340.0, 50.0);
+                    if let Some(offset_x) = ((self.pages[1].get_panel_width() - self.pages[0].get_panel_width())/2).to_f32(){
+                        if let Some(offset_y) = ((self.pages[1].get_panel_height() - self.pages[0].get_panel_height())/2).to_f32() {
+                            buffer = Page::buffer_move_center(buffer, offset_x, offset_y);
+                        }
+                    }
+                    
                 }
                 //Iteration Page
                 1 => {
-                    //Offsets:
-                    //x: width of preview_panel = 1280     | y: height of preview_panel = 500
-                    //   width of result_panel = 1280      |    height of result_panel = 500
-                    // => offset_x = (1280 - 1280)/ 2 = 0  | => offset_y = (500 - 500)/2 = 0
-                    buffer = Page::buffer_move_center(buffer, 0.0, 0.0);
+                    
+                    if let Some(offset_x) = ((self.pages[2].get_panel_width() - self.pages[1].get_panel_width())/2).to_f32(){
+                        if let Some(offset_y) = ((self.pages[2].get_panel_height() - self.pages[1].get_panel_height())/2).to_f32() {
+                            buffer = Page::buffer_move_center(buffer, offset_x, offset_y);
+                        }
+                    }
                 }
 
                 //other values do not accure but can be added by adding new pages
-                // 2 is skipped because there is an extra function for returning from result to menu (return_to_menu)
+                // 2 is skipped because there is an extra function tho its can_continue() is false to prevent getting out of bounds
                 _ => {}
             }
-            //need if for repeat action
-           
-            self.pages[self.current_page +1].set_vertex_buffer(&mut buffer);
+            //If the current Page is Result (idx == 2), next page will be the Menu (idx == 0)
+            //no buffer has to be copyed
+            self.pages[self.current_page +1].set_vertex_buffer(buffer);
             
 
-            //advance to netx page
+            //advance to next page
             self.current_page += 1;
+
+            
+            
         }
     }
-
+    //Function that sets the Page from Result back to Menu
     fn return_to_menu(&mut self) {
-        //buffer transformation needed
+        self.pages[1].reset_iteration();
+        self.pages[2].reset_iteration();
         self.current_page = 0;
     }
+
 
     fn can_continue(&self) -> bool {
         self.current_page + 1 < self.pages.len()
@@ -302,7 +317,7 @@ impl<'a> Page {
 
                     //check if the last action done was closing the polygon
                     if draw_panel.closed == true {
-                        println!("polygon was closed");
+                       
                         draw_panel.closed = false;
                         draw_panel.ignore_input = false;
 
@@ -412,12 +427,8 @@ impl<'a> Page {
                         tools.redo_active = false;
                     }
 
-                    Page::push_vertex_to_buffer(vertex, &mut draw_panel.vertices);
+                    Page::push_vertex_to_buffer(vertex, &mut draw_panel.vertices);            
                     
-                    if draw_panel.closed {
-                        draw_panel.ignore_input = true;
-                        tools.draw_active = true;
-                    }
                     
                     draw_panel.polygon.request_redraw();
 
@@ -508,8 +519,8 @@ impl<'a> Page {
     fn can_continue(&self) -> bool {
         match self {
             Page::Menu { draw_panel, .. } => if draw_panel.vertices != vec![] { true} else { false},
-            Page::Iteration { .. }=> true,
-            Page::Result { .. }=> false,
+            Page::Iteration { .. } => true,
+            Page::Result { .. } => false,
 
         }
     }
@@ -528,11 +539,12 @@ impl<'a> Page {
         }
         .into()
     }
-
+    //Function to provide easy creation of a container that holds all displayed content of a page
     fn container(title: &str) -> Column<'a, PageMessage> {
         Column::new().spacing(20).push(Text::new(title).size(50))
     }
 
+    //function that returns the vertex buffer of a page
     fn get_vertex_buffer(&mut self) -> Vec<Point> {
         match self {
             Page::Menu { draw_panel, .. } => {
@@ -547,19 +559,22 @@ impl<'a> Page {
         }
     }
 
-    fn set_vertex_buffer(&mut self, vertex_buffer: &mut Vec<Point>)  {
+    //function that sets the vertex buffer of a page to a given buffer
+    fn set_vertex_buffer(&mut self, vertex_buffer:  Vec<Point>)  {
         match self {
             Page::Menu { .. } => {
             }
             Page::Iteration { preview_panel, .. } => {
-               preview_panel.vertices.append(vertex_buffer);
+               preview_panel.vertices = vertex_buffer;
             }
             Page::Result { result_panel, .. } => {
-                result_panel.vertices.append(vertex_buffer);
+                result_panel.vertices =  vertex_buffer;
             }
         }
     }
 
+    //Function that moves all vertices in a buffer with a given offset so that the resulting polygon is placed
+    //in the center of the new canvas
     fn buffer_move_center(buffer: Vec<Point>, offset_x: f32, offset_y: f32) -> Vec<Point> {
         
         let mut output: Vec<Point> = vec![];
@@ -572,6 +587,9 @@ impl<'a> Page {
         return output;
     }
 
+    //Function that adds a Point to the vertex buffer, it checks if the given vertex is already given as the first vertex, 
+    //so that there is no double vertex at the start/end of the polygon
+    //TODO check that NONE of the vertices are doubled
     fn push_vertex_to_buffer(vertex: Point, buffer: &mut Vec<Point>) {
         if buffer.len() > 0 {
             if vertex != buffer[buffer.len() -1] {
@@ -583,11 +601,66 @@ impl<'a> Page {
         }
     }
 
+    //Function thet returns the width of a canvas
+    fn get_panel_width(&self) -> u16 {
+        match self {
+            Page::Menu { draw_panel, .. } => {
+                draw_panel.panel_width
+            }
+            Page::Iteration { preview_panel, .. } => {
+                preview_panel.panel_width
+            }
+            Page::Result { result_panel, .. } => {
+                result_panel.panel_width
+            }
+        }
+    }
+    //Function that returns the width of a canvas
+    fn get_panel_height(&self) -> u16 {
+        match self {
+            Page::Menu { draw_panel, .. } => {
+                draw_panel.panel_height
+            }
+            Page::Iteration { preview_panel, .. } => {
+                preview_panel.panel_height
+            }
+            Page::Result { result_panel, .. } => {
+                result_panel.panel_height
+            }
+        }
+    }
+
+    //Function that resets the step_count and line buffer of iteration, so the algorithm can be performed again
+    fn reset_iteration(&mut self) {
+        match self {
+            
+            Page::Iteration { current_step, preview_panel, .. } => {
+
+                    let one: usize = 1;
+                    *current_step = one;
+
+                    preview_panel.polygon.request_redraw();
+                
+                //diagonals = vec![];
+                
+            }
+            Page::Result { result_panel, .. } => {
+                
+                result_panel.polygon.request_redraw();
+            
+            }
+            _ => {}
+        }
+    }
+
     //function that defines the look of the menu with a draw poanel and drawing tools as well as several options for the algorithm
     fn menu(tools: &'a mut Tools, progset: &'a mut ProgramSettings, draw_panel: &'a mut DrawPanel, confirm_button: &'a mut button::State,
             dark_mode: &mut bool,) -> Column<'a, PageMessage> {
         
         let mut button_con = button(confirm_button, "Confirm");
+        
+        //should be draw_panel.closed but this does not get read when it reached true due to unknown reason
+        //idea: need a nother action performed to refresh view of the menu page
         if draw_panel.vertices != vec![] {
             button_con = button_con.on_press(PageMessage::ConfirmPressed)
         }
@@ -658,7 +731,8 @@ impl<'a> Page {
         
         let mut button_next = button(next_button, "Next").on_press(PageMessage::NextPressed);
         let mut button_end = button(end_button, "End").on_press(PageMessage::EndPressed);
-        let preview = Row::new().align_items(Alignment::Center).push(PreviewPanel::preview_panel(preview_panel, dark_mode));
+        let preview = Row::new().align_items(Alignment::Center)
+                .push(PreviewPanel::preview_panel(preview_panel));
         
         //button styles depending if dark mode active or not
         if dark_mode {
@@ -726,19 +800,6 @@ impl<'a> Page {
 
         Self::container("").push(result).push(controls)
     }
+
+    
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

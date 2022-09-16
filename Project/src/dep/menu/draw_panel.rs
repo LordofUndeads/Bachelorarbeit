@@ -15,7 +15,8 @@ pub struct DrawState {
 pub struct DrawPanel {
    pub polygon: DrawState,
    pub vertices: Vec<Point>,
- 
+   pub panel_width: u16,
+   pub panel_height: u16,
    pub closed: bool,
    pub ignore_input: bool,
 }
@@ -27,7 +28,8 @@ impl<'a> DrawPanel {
                 pending: None, 
                 cache: canvas::Cache::new() }, 
             vertices: vec![],
-
+            panel_width: 600,
+            panel_height: 400,
             closed: false,
             ignore_input: true,
         }
@@ -38,22 +40,23 @@ impl<'a> DrawPanel {
         .padding(0)
         .spacing(0)
   
-        .push(draw_panel.polygon.view((draw_panel.vertices).to_vec(), draw_panel.ignore_input,  draw_panel.closed).map(PageMessage::AddPoint))
+        .push(draw_panel.polygon.view((draw_panel.vertices).to_vec(), draw_panel.ignore_input,  draw_panel.panel_width,
+            draw_panel.panel_height, draw_panel.closed,).map(PageMessage::AddPoint))
         
         .into()
     }
 }
 
 impl DrawState {
-    pub fn view<'a>(&'a mut self,  vertices: Vec<Point>, ignore_input: bool, closed: bool) -> Element<'a, Point> {
+    pub fn view<'a>(&'a mut self,  vertices: Vec<Point>, ignore_input: bool, panel_width: u16, panel_height: u16 ,closed: bool) -> Element<'a, Point> {
         Canvas::new(PolygonOutLine {
             state: self,
             vertices,
             closed,
             ignore_input, 
         })
-        .width(Length::Units(600))
-        .height(Length::Units(400))
+        .width(Length::Units(panel_width))
+        .height(Length::Units(panel_height))
         .into()
     }
 
@@ -133,8 +136,10 @@ impl<'a> canvas::Program<Point> for PolygonOutLine<'a> {
                                                 last: *from, 
                                                 first: *to
                                             });
+                                            
                                         }
-                                    }   
+                                        
+                                    }  
                                     
                                     None
                                    
@@ -156,7 +161,7 @@ impl<'a> canvas::Program<Point> for PolygonOutLine<'a> {
                            
                             }
 
-                            Some(Pending::ClipToStartVertex { .. } )=> {
+                            Some(Pending::ClipToStartVertex {   ..  } )=> {
                                 
                                 None
                             }
