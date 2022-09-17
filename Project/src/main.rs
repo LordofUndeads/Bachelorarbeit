@@ -16,7 +16,7 @@ use dep::result::result_view::ResultPanel;
 
 pub fn main() -> iced::Result {
 
-    //PopUpLoader::init_card()
+   
     Gui::run(Settings {
         antialiasing: true,
         window: window::Settings {
@@ -159,8 +159,6 @@ impl Pages {
     fn advance(&mut self) {
         if self.can_continue() {
 
-            
-           
             //copying vertices from one page to the next page for preview purposes
             
             let mut buffer = self.pages[self.current_page].get_vertex_buffer();

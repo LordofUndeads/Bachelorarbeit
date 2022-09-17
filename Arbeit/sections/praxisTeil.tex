@@ -1,0 +1,255 @@
+\section{Praktische Implementierung}
+
+\subsection{Programmiersprache und Bibliotheken}
+\subsubsection{Rust}
+    Wie bereits im Abschnitt über verwandte Arbeiten angesprochen, sind wichtige Punkte bei der Implementierung von Algorithmen die 
+    Geschwindigkeit und die Speichernutzung. Eine Programmiersprache, welche darauf ausgelegt ist in diesen Bereichen besonders effizient zu sein, 
+    ist Rust. \cite{rust} Entworfen von Graydon Hoare, welcher seine Neuentwicklung im Juli 2010 das erste Mal  vortsellte, ist Rust eine sehr vielseitige Sprache.
+    Mit dem Grundsatz einer open-source Multiparadigmen-Systemprogrammiersprache ist sie nicht nur für die breite Masse der Programmierer zugänglich, sondern auch 
+    speziell für die Umsetzung von hardwarenaher Programmierung geeignet. Die Sprache setzt viele verschiedene Paradigmen der praktischen Programmierung um. So 
+    unterstützt Rust sowohl funktionale als auch objektorientierte, sowie nebenläufige Programmierung. Auch ein hoher Abstraktionsgrad ist möglich. Vorallem aber 
+    wurde beim Entwurf der Sprache darauf geachtet, dass die Kosten der Abstraktion zu Laufzeit so gering wie möglich sind. Man spricht von /emph{zero-cost-abstractions}, 
+    welche besipielsweise auch bei der weitverbreiteten Programmiersprach \emph{C++} umgesetzt wurden. \cite{rust-wiki}
+    Ein weiterer Vorteil von Rust ist, das die Sprache für \emph{cross-platform} Benutzung geeignet ist. Das bedeutet sie ist Betriebssystem unabhängig. Das macht Rust zu einer 
+    sehr einfach zugänglichen Sprache, da es nicht notwendig ist, ein Unix-Basiertes- oder ein Windows-Betriebssystem zu besitzen oder gegebenen Falls ein Subsystem oder eine 
+    Virtual Machine zu nutzen. All das würde zusätzlichen Aufwand bedeuten.
+    Trotz allem sind natürlich, wie in keiner Programmiersprache, alle gewünschten Funktionen bereits implementiet. Bei Rust stellt das, durch den open-source Charakter,
+    jedoch kein Problem dar. Die Community kann unter Nutzung des orginalen Funktionsumfangs, der Standartbibliotheken, weitere neue Bibliotheken erstellen. 
+    So ist beispielsweise die Bibliothek \emph{Iced} enstanden, welche für den Entwurf von \ac{gui}s gedacht ist. Im nächsten Kapitel ist darüber mehr zu lesen.
+\subsubsection{Iced}
+Wie bereits angedeutet ist Iced eine Bibliothek für Rust, welche sich auf die Umsetzung von grafischen Nutzerinterfaces spezialisiert ist.
+Der spanische Programmierer Héctor Ramón ließ sich bei Iced von der Sprache Elm inspirieren. Es ist zu erwähnen, dass sich Iced zum Zeitpunkt, da diese Arbeit verfasst wird, mit der Version 
+0.4 noch im experimentellen Status befindet. Dennoch sind bereits die verschiedensten Funktionen nebst anschaulichen Beispielen für die Implementierung umgesetzt. Auch sind zwei verschiedene 
+Renderer, also Software zum Darstellen von Grafiken auf dem Computerbildschirm, vorhanden. Namentlich \emph{iced-wgpu} und \emph{iced-glow}, unterstützt der erste der beiden die Verwendung von 
+Vulkan \cite{vulkan}, Metal \cite{metal} und DirectX 12 \cite{dx12} und der zweite die Verwendung von OpenGL 2.1+ \cite{opgl} und OpenGL ES 2.0+ \cite{opgles}. \cite{iced}
+
+\subsection{Entwurf des grafischen Nutzerinterfaces}
+Bevor man an die praktische Umsetzung eines \ac{gui} gehen kann, benötigt man einen einen Entwurf. Eine Möglichkeit, um bereits in der Entwurfsphase auf Aspekte der Nutzerfreundlichkeit eingehen zu können, 
+stellen Papierentwürfe dar. Dabei wird das \ac{gui}, statt aus digitalen Fenstern, aus einzelnen Blättern Papier gezeichnet und die Funktionen so simuliert. Dabei fallen negative Punkte wie zu tiefe oder breite 
+Menüs auf und können direkt behoben werden, bevor sie schon im Code umgesetzt sind. Das vermeidet aufwendiges Umstrukturieren von hunderten Zeilen Code.
+
+Bei dieser Arbeit gab es zwei konkurierende Entwurfsideen, welche hier aus Gründen der Anschaulichkeit und Qualität nicht auf Papier dargestellt werden. Statt dessen werden digitale Skizzen verwendet, bei denen eventuelles Auffalten des Papiers
+durch Pfeile und Beschriftung gekennzeichnet werden. 
+Die Ideen entscheiden sich vorallem durch das erste Menü, welches einmal die Optionen für die Triangulation inkludiert - im Folgenden als \emph{Menü Entwurf - Optionen inkludiert} und einmal ein Entwurf, bei dem 
+die Optionen auf einem extra Menü nach Eingabe des Polygons aufgeführt werden. Dieser zweite Entwurf soll als \emph{Menü Entwurf - Optionen nachfolgend} bezeichnet werden.
+Klar war jedoch von Beginn an, wie die Algorithmusiteration aussehen soll. Sie wird hier nicht einzeln aufgeführt, ist aber im Abschnitt Finalentwurf zusehen.
+Zuletzt soll das Resultat des Algorithmus gezeigt werden. Auch hierfür gab es zwei unterschiedliche Konzepte. Einmal sollten zwei Anzeigen umgesetzt werden, zum einen das Ergebnis des gewählten Algorithmus und zum anderen das 
+Ergebis aus einer \ac{dt}, welche als optimales Ergebis gilt und einen guten Qualitätsvergleich ermöglicht. Dieser Entwurf wird als \emph{Resultat Entwurf - Vergleichsfenster} bezeichnet.
+Der andere Entwurf wird aufgrund der hier nur textlich dargestellten Metadaten als \emph{Resultat Entwurf - Metadaten} bezeichnet.
+
+\subsubsection{Menü Entwurf - Optionen inkludiert}
+\subsubsection{Menü Entwurf - Optionen nachfolgend}
+\subsubsection{Resultat Entwurf - Vergleichsfenster}
+\subsubsection{Resultat Entwurf - Metadaten}
+\subsubsection{Finalentwurf}
+
+
+\subsection{GUI und Pages}
+Wie bereits in Kapitel 4.2.5 beschrieben, besteht das \ac{gui} aus drei Teilen. Diese werden durch einen Aufzählungstypen \lstinline{enum Page} dargestellt. Dieser besitzt drei Ausprägungen, wie im folgenden zu sehen, welche zusätzlich eigene Felder für die weitere 
+Implementierung der Funktionalitäten besitzen. Dieses Struct wird in der \lstinline{main.rs} deklariert, sowie auch die anderen in diesem Abschnitt besprochenen Komponenten des Codes.
+
+\begin{lstlisting}[language=C]
+enum Page {
+    Menu { 
+        tools: Tools,
+        progset: ProgramSettings,
+        draw_panel: DrawPanel,
+        confirm_button: button::State,
+        undo_buffer: Vec<PageMessage>,
+        action_buffer: Vec<PageMessage>,
+        undo_performed: bool,
+        dark_mode: bool,
+    },
+    Iteration {
+        preview_panel: PreviewPanel,
+        prevoius_button: button::State,
+        next_button: button::State,
+        end_button: button::State,
+        dark_mode: bool,
+        current_step: usize,
+        
+    },
+    Result {
+        result_panel: ResultPanel,
+        repeat_button: button::State,
+        exit_button: button::State,
+        dark_mode: bool,
+    },
+}    
+\end{lstlisting}
+
+Auf jede dieser Ausprägungen wird in den folgenden Kapiteln gesondert eingegangen.
+Als übergeordneten Datentyp existiert das \lstinline{struct Pages}. 
+Es besitzt zwei Felder. Zum einen einen Vektor aus allen Seiten, welche Ausprägungen des \lstinline{enum Page} sind.
+Zusätzlich gibt es noch den Zähler  \lstinline{current_page: usize} als Index für den eben beschriebenen Vektor. Er wird später verwendet, um
+von einer Seite des Programs zur nächsten zu wechseln.
+
+\begin{lstlisting}[language=C]
+    struct Pages {
+        pages: Vec<Page>,
+        current_page: usize,
+    }
+\end{lstlisting}
+
+Das \lstinline{struct Pages} erhält eine Implementierung mit verschiedenen Funktionen mit dem nachfolgenden Aufruf.
+Die Funktionen sollen an dieser Stelle in vollständigem Umfang aufgeführt werden. Eine namentliche Erwähnung soll hier genügen. 
+Nur auf die \lstinline{fn new()} soll einmal genauer eingegangen werden, damit sie exemplarisch für alle weiteren ähnlichen Funktionen erklärt wird.
+Wichtig für die Funktionalität des Programms ist vorallem, dass \lstinline{current_page} mit \lstinline{0} initialisiert wird. Das ist gleichbedeutend mit dem Setzen der 
+Startseite auf \lstinline{Page::Menu}.
+
+\begin{lstlisting}[language=C]
+    impl Pages {
+        fn new() -> Pages { ... }
+        fn update(&mut self, msg: PageMessage, ) { ... }
+        fn view(&mut self) -> Element<PageMessage> { ... }
+        fn advance(&mut self) { ... }
+        fn return_to_menu(&mut self) { ... }
+        fn can_continue(&self) -> bool { ... }
+        fn title(&self) -> &str { ... }
+    }
+\end{lstlisting}
+
+Mittels der \lstinline{fn new()} wird, bei einer Initialisierung einer Variable vom Typ \lstinline{Pages}, die Standartbelegung aller Felder dieses structs festgelegt. 
+Dies geschieht beispielsweise beim Start des Programms. Man bezeichnet diese Funktion auch als Konstruktor. Die Datentypen, welche hier zugewiesen werden sowie andere Standartkonstruktoren,
+werden an anderer Stelle noch Erwähnung finden, wenn sie eine zentralere Rolle spielen.
+
+Noch ist das Programm allerdings nicht lauffähig. Dazu fehlen noch drei wichige Bestandteile. Als erstes das \lstinline{struct Gui}. Dieses umfasst zwei Felde, einmal 
+\lstinline{pages: Pages} und \lstinline{dark_mod: bool}. Desweiteren wird für dieses Struct eine Implementierung einer \lstinline{iced::Sandbox} vorgenommen.
+Die \lstinline{Sandbox} ist ein Applikationstyp aus der Iced-Bibliothek, welcher ein Programm mit \ac{gui} erzeugt, jedoch keine asynchronen Aktionen unterstützt. Hierfür müsste man
+eine \lstinline{iced::Application} nutzen, was für einfache Anwendungen, wie diese Arbeit, nicht notwendig ist. Eine solche Implementierung sieht wie folgt aus:
+
+\begin{lstlisting}[language=C]
+    impl Sandbox for Gui {
+        type Message = Message;
+
+        fn new() -> Gui { ... }
+        fn title(&self) -> String { ... }
+        fn update(&mut self, event: Message) { ... }
+        fn view(&mut self) -> Element<Message> { ... }
+    }
+\end{lstlisting}
+
+Zuerst wird eine Typendefinition für \lstinline{Message} durchgeführt. Diese ist wichtig für zwei der vier obligatorischen Funktionen einer \lstinline{Sandbox}, denn 
+mittels Nachrichten werden alle Rückmeldungen zu Nutzerinteraktionen abgebildet. Die \lstinline{fn new()} ist wieder, wie berits beschrieben ein Standartkonstruktor.
+
+Die \lstinline{fn title(&self)} setzt den text, welcher oben über einer Seite des Programms im Header angezeigt wird. Dieser wird je nach dem, welche Seite aktiv ist,
+festgelegt. Dafür findet sich in der Implementierung \lstinline{impl Page} eine Funktion mit gleichem Namen. Diese ist nachfolgend abgebildet.
+
+\begin{lstlisting}
+  
+    impl<'a> Page {
+        
+        fn title(&self) -> &str {
+            match self {
+                Page::Menu { .. } => 
+                    "Triangulation for Polygons - Menu",
+                Page::Iteration { .. } => 
+                    "Triangulation for Polygons 
+                        - Algorithm Iteration",
+                Page::Result { .. } => 
+                    "Triangulation for Polygons - Result",
+            }
+        }
+    }
+
+\end{lstlisting}
+
+Die \lstinline{fn update(&mut self, event: Message)} hat die Aufgabe, die Übergänge zwischen den einzelnen Seiten zubewerkstelligen und die jeweilige Update-Funktion 
+der einzelnen Pages aufzurufen. Für die Übergänge werden bestimmte Nachrichten abgefangen, welche von Buttons auf den jeweiligen Seiten generiert werden. Dazu aber in späteren Kapiteln mehr.
+
+Zu guter Letzt gibt es noch die \lstinline{fn view(&mut self)}. Diese ist für alle visuellen Aspekte des Programms zuständig. Hier wird das übergeordnete Layout der Pages festgelegt und die 
+zur aktiven Page gehörende View-Funktion aufgerufen. Diese legt dann das spezielle Layout jeder Seite fest.
+
+Das zweite noch fehlende Element, um das Programm lauffähig zu machen ist die \lstinline{fn main()}. Diese ist das Kernstück eines jeden Rust-Programms. Sie ist so lange aktiv, bis das Programm beendet wird.
+Sie hat in diesem Fall die Funktion, die \lstinline{Sandbox} zu starten und ablaufen zu lassen. Dazu können der \lstinline{fn Gui::run()}, welche durch die Implementierung der \lstinline{Sandbox} hinzugefügt wurde, verschiedene 
+Einstellungsmöglichkeiten vom Typ \lstinline{Settings} übergeben werden. Darunter sind beispielsweise die Höhe und Breite des Programmfensters, ob dieses skalierbar sein soll und anderes. Alles was man nicht per Hand festlegt,
+wird durch \lstinline{..Settings::default()} auf einen Standartwert gesetzt. Das Ganze sieht dann wie folgt aus: 
+
+\begin{lstlisting}[language=C]
+  
+    pub fn main() -> iced::Result {
+
+        Gui::run(Settings {
+            antialiasing: true,
+            window: window::Settings {
+                resizable: false,
+                position: Position::Centered,
+                size: (1280, 720),
+                ..window::Settings::default()
+            },
+            ..Settings::default()
+        })
+    }
+
+\end{lstlisting}
+
+Die letzte wichtige Komponente eines Rust-Projekts ist die \lstinline{Cargo.toml} Datei. Sie beinhaltet alle relevanten Informationen für den Compiler, wie zum Beispiel die 
+Dependencies. Für dieses Projekt sieht es folgendermaßen aus:
+
+\begin{lstlisting}
+  
+    [package]
+        name = "src"
+        version = "0.1.0"
+        author = "Christoph Pooch"
+        edition = "2021"
+
+    [dependencies]
+        iced = {version = "0.4", features = ["canvas"]}
+        iced_aw = { version = "0.2", default-features = false, features = ["card"]}
+        num-traits = "0.2"
+    [[bin]]
+        name = "src"
+        path = "main.rs"
+
+\end{lstlisting}
+
+Das Programm kann nun mittels des Befehl \lstinline{cargo run} in der Kommandozeile ausgeführt werden.
+
+\subsubsection{Page - Menu}
+\subsubsection{Page - Iteration}
+\subsubsection{Page - Result}
+\subsubsection{Style und Dark Mode}
+Ein großer Aspekt bei der Umsetzung von \ac{gui}s sind Farben. So haben bestimmte Farben für den Menschen bestimmte Bedeutungen - etwa Rot für Gefahr oder Ablehnung.
+Dies nutzt man, um dem Benutzer bestimmte Botschaften zu übermitteln. So sind farblich hervorgehobene Buttons zum Beispiel wichtiger als graue. Hierfür müssen diese Farben festgelegt werden.
+Das geschieht in der Datei \lstinline{style.rs} mittels der Implementierung von \lstinline{StyleSheets} für verschiedene Aufzählungstypen.
+Dabei wird für jedes Interaktionselement wie Buttons, Radio Buttons aber auch für das Fenster selbst ein \lstinline{enum} erstellt, welcher alle verschiedenen Möglichkeiten für Stile des jeweiligen Elements 
+umfasst. 
+
+Hier soll einmal exemplarisch gezeigt werden, wie ein solches \lstinline{StyleSheet} für einen \lstinline{iced::container} aussieht. Dieser beinhaltet in jeder View-Funktion den Inhalt einer Seite 
+und umfasst derher die Hintergrundfarbe \lstinline{backgroundcolor} und die Schriftfarbe \lstinline{text_color} des Anzeigefensters. 
+Zuerst wird im Aufzählungstypen \lstinline{enum WindowStyle} festgelegt, wie viele unterschiedliche Stile ein solcher Container haben kann. 
+Danach wird für jeden Stil pro Eigenschaft eine Farbe festgelegt. Alle Eigenschaften, welche dem festgelegten Standart der Iced-Bibliothek folgen sollen, werden mittels 
+\lstinline{..Style::default()} abgebildet. So gibt es für Container in dieser Arbeit zwei Stile, wie für die meisten anderen Element auch. Die einzige Ausnahme bilden die Buttons, welche eine rot und grüne, 
+sowie eine helle und eine dunkle Variante für Primär- und Sekundärbuttons besitzen. 
+Alle anderen Elemente des \ac{gui} haben eine helle und eine dunkle Variante. Der sogenannte \emph{Dark Mode} ist eine weit verbreitete Option für vielerlei Anwendungsprogramme. Da er für einige Nutzer ein obligatorischer Modus ist,
+ist er auch in dieser Arbeit implementiert. Er wird wie bereits erwähnt durch einen Toggler im Menü ein- oder ausgeschalten. Dadurch ändern sich alle Stile von der hellen auf die dunkel Variante oder umgekehrt. 
+Standartmäßig ist der Dark Mode allerdings aus.
+
+\begin{lstlisting}
+  
+    pub enum WindowStyle {
+        Light,
+        Dark
+    }
+
+    impl container::StyleSheet for WindowStyle {
+        fn style(&self) -> container::Style {
+            container::Style { 
+                
+                background:  Some(Background::Color(match self {
+                    WindowStyle::Light => Color::WHITE,
+                    WindowStyle::Dark => Color::from_rgb8(0x57, 0x57, 0x57),
+                })),
+                text_color: match self {
+                    WindowStyle::Light => Some(Color::from_rgb8(0x57, 0x57, 0x57)),
+                    WindowStyle::Dark => Some(Color::WHITE),
+                },
+                ..container::Style::default()
+            }
+        
+        }
+    }
+
+\end{lstlisting}
+
