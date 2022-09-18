@@ -69,7 +69,7 @@ impl DrawState {
     }
 
     pub fn set_pending_waitinput(&mut self, vertex: Point) {
-        self.pending = Some(Pending::WaitSndInput { from: (vertex)});
+        self.pending = Some(Pending::WaitNxtInput { from: (vertex)});
     }
 }
 
@@ -113,7 +113,7 @@ impl<'a> canvas::Program<Point> for PolygonOutLine<'a> {
                             None => {
                                
                                
-                                self.state.pending = Some(Pending::WaitSndInput {
+                                self.state.pending = Some(Pending::WaitNxtInput {
                                         from: cursor_position
                                                         });
                                
@@ -122,7 +122,7 @@ impl<'a> canvas::Program<Point> for PolygonOutLine<'a> {
                                     y: cursor_position.y
                                 })
                             }
-                            Some(Pending::WaitSndInput { .. }) => {
+                            Some(Pending::WaitNxtInput { .. }) => {
 
                                 if over_first_vertex {
 
@@ -145,7 +145,7 @@ impl<'a> canvas::Program<Point> for PolygonOutLine<'a> {
                                    
                                 }
                                 else {
-                                    self.state.pending = Some(Pending::WaitSndInput {
+                                    self.state.pending = Some(Pending::WaitNxtInput {
                                     
                                         from: cursor_position,
                                     });
@@ -226,7 +226,7 @@ impl<'a> canvas::Program<Point> for PolygonOutLine<'a> {
 
 #[derive(Debug, Clone, Copy)]
 enum Pending {
-    WaitSndInput { from: Point },
+    WaitNxtInput { from: Point },
     ClipToStartVertex {last: Point, first: Point},
    
 }
@@ -238,7 +238,7 @@ impl Pending {
         if let Some(cursor_position) = cursor.position_in(&bounds) {
             match *self {
 
-                Pending::WaitSndInput { from } => {
+                Pending::WaitNxtInput { from } => {
                     
                     let circle = Path::circle(from, 3.0);
                     let line = Path::line(from, cursor_position);
