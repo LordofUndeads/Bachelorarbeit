@@ -14,7 +14,7 @@
     sehr einfach zugänglichen Sprache, da es nicht notwendig ist, ein UNIX-Basiertes- oder ein Windows-Betriebssystem zu besitzen oder gegebenen Falls ein Subsystem oder eine 
     Virtual Machine zu nutzen. All das würde zusätzlichen Aufwand bedeuten.
     Trotz allem sind natürlich, wie in keiner Programmiersprache, alle gewünschten Funktionen bereits implementiert. Bei Rust stellt das, durch den open-source Charakter,
-    jedoch kein Problem dar. Die Community kann unter Nutzung des originalen Funktionsumfangs, der Standartbibliotheken, weitere neue Bibliotheken erstellen. 
+    jedoch kein Problem dar. Die Community kann unter Nutzung des originalen Funktionsumfangs, der Standardbibliotheken, weitere neue Bibliotheken erstellen. 
     So ist beispielsweise die Bibliothek \emph{Iced} entstanden, welche für den Entwurf von \ac{gui}s gedacht ist. Im nächsten Kapitel ist darüber mehr zu lesen.
 \subsubsection{Iced}
 Wie bereits angedeutet ist Iced eine Bibliothek für Rust, welche sich auf die Umsetzung von grafischen Nutzerinterfaces spezialisiert ist.
@@ -109,8 +109,8 @@ Startseite auf \lstinline{Page::Menu}.
     }
 \end{lstlisting}
 
-Mittels der \lstinline{fn new()} wird, bei einer Initialisierung einer Variable vom Typ \lstinline{Pages}, die Standartbelegung aller Felder dieses structs festgelegt. 
-Dies geschieht beispielsweise beim Start des Programms. Man bezeichnet diese Funktion auch als Konstruktor. Die Datentypen, welche hier zugewiesen werden sowie andere Standartkonstruktoren,
+Mittels der \lstinline{fn new()} wird, bei einer Initialisierung einer Variable vom Typ \lstinline{Pages}, die Standardbelegung aller Felder dieses structs festgelegt. 
+Dies geschieht beispielsweise beim Start des Programms. Man bezeichnet diese Funktion auch als Konstruktor. Die Datentypen, welche hier zugewiesen werden sowie andere Standardkonstruktoren,
 werden an anderer Stelle noch Erwähnung finden, wenn sie eine zentralere Rolle spielen.
 
 Noch ist das Programm allerdings nicht lauffähig. Dazu fehlen noch drei wichtige Bestandteile. Als erstes das \lstinline{struct Gui}. Dieses umfasst zwei Felde, einmal 
@@ -130,7 +130,7 @@ eine \lstinline{iced::Application} nutzen, was für einfache Anwendungen, wie di
 \end{lstlisting}
 
 Zuerst wird eine Typendefinition für \lstinline{Message} durchgeführt. Diese ist wichtig für zwei der vier obligatorischen Funktionen einer \lstinline{Sandbox}, denn 
-mittels Nachrichten werden alle Rückmeldungen zu Nutzerinteraktionen abgebildet. Die \lstinline{fn new()} ist wieder, wie bereits beschrieben ein Standartkonstruktor.
+mittels Nachrichten werden alle Rückmeldungen zu Nutzerinteraktionen abgebildet. Die \lstinline{fn new()} ist wieder, wie bereits beschrieben ein Standardkonstruktor.
 
 Die \lstinline{fn title(&self)} setzt den Text, welcher oben über einer Seite des Programms im Header angezeigt wird. Dieser wird je nach dem, welche Seite aktiv ist,
 festgelegt. Dafür findet sich in der Implementierung \lstinline{impl Page} eine Funktion mit gleichem Namen. Diese ist nachfolgend abgebildet.
@@ -162,7 +162,7 @@ zur aktiven Page gehörende View-Funktion aufgerufen. Diese legt dann das spezie
 
 Die Nachrichten, welche während der Laufzeit des Programms von den einzelnen Interaktionselementen generiert und ausgegeben werden, müssen behandelt werden, um alle Funktionalitäten auch bei Aufruf auszuführen.
 Dafür hat der der Struct \lstinline{Page} ebenfalls eine Funktion \lstinline{fn update()}. Diese besteht aus einem großen \lstinline{match}-Statement, welches für jeden auftretenden Nachrichtentypen vom Typ \lstinline{PageMessage} die gewünschten 
-Aktionen durchführt. Dieses wird in späteren Kapiteln in Teilen betrachtet werden. Hier seinen einmal alle Nachrichtentypen angeführt. Diese sind in der Datei \lstinline{messgae.rs} definiert.
+Aktionen durchführt. Dieses wird in späteren Kapiteln in Teilen betrachtet werden. Hier seinen einmal alle Nachrichtentypen angeführt. Diese sind in der Datei \lstinline{message.rs} definiert.
 
 \begin{lstlisting}
     pub enum PageMessage {
@@ -201,7 +201,7 @@ Aktionen durchführt. Dieses wird in späteren Kapiteln in Teilen betrachtet wer
 Das zweite noch fehlende Element, um das Programm lauffähig zu machen ist die \lstinline{fn main()}. Diese ist das Kernstück eines jeden Rust-Programms. Sie ist so lange aktiv, bis das Programm beendet wird.
 Sie hat in diesem Fall die Funktion, die \lstinline{Sandbox} zu starten und ablaufen zu lassen. Dazu können der \lstinline{fn Gui::run()}, welche durch die Implementierung der \lstinline{Sandbox} hinzugefügt wurde, verschiedene 
 Einstellungsmöglichkeiten vom Typ \lstinline{Settings} übergeben werden. Darunter sind beispielsweise die Höhe und Breite des Programmfensters, ob dieses skalierbar sein soll und anderes. Alles was man nicht per Hand festlegt,
-wird durch \lstinline{..Settings::default()} auf einen Standartwert gesetzt. Das Ganze sieht dann wie folgt aus: 
+wird durch \lstinline{..Settings::default()} auf einen Standardwert gesetzt. Das Ganze sieht dann wie folgt aus: 
 
 \begin{lstlisting}[language=C]
   
@@ -248,10 +248,10 @@ Das Programm kann nun mittels des Befehl \lstinline{cargo run} in der Kommandoze
 Wie bereits im Kapitel 4.2.5 zusehen war, setzt sich das Menü aus drei großen Bereichen zusammen, der Zeichenfläche, den Zeichenwerkzeugen und den Optionen. \linebreak
 
 \textbf{Zeichenfläche}\linebreak
-Über die Zeichenfläche, welche der zentralste Bestandteil des Menüs ist, wird das Polygon eingegeben, welches im weiteren Verlauf dann mittels des gewählten ALgorithmus zerlegt werden soll.
+Über die Zeichenfläche, welche der zentralste Bestandteil des Menüs ist, wird das Polygon eingegeben, welches im weiteren Verlauf dann mittels des gewählten Algorithmus zerlegt werden soll.
 Hierfür besitzt die \lstinline{Page::Menu} ein Feld \lstinline{draw_panel: DrawPanel}. Dieser Struct wird in der Datei \lstinline{draw_panel.rs} definiert und mehrere Felder, wie nachfolgend zu sehen. 
-Davon ist \lstinline{polygon: DrawState} der Teil, welcher, zusammen mit dem Vektor \lstinline{verticies: Vec<Point>} als Eingabespeicher, die Zeichenfunktionalität umsetzt. Man kann sich den \lstinline{DrawState} als Zustandsautomaten 
-vorstellen, welcher drei Zustände vom Typ \lstinline{pending: Option<Pending>} ( \lstinline{None, WaitSndInput, ClipToStartVertex} ) und einen Cache für die Zeichenoperationen des Renderers besitzt. 
+Davon ist \lstinline{polygon: DrawState} der Teil, welcher, zusammen mit dem Vektor \lstinline{vertices: Vec<Point>} als Eingabespeicher, die Zeichenfunktionalität umsetzt. Man kann sich den \lstinline{DrawState} als Zustandsautomaten 
+vorstellen, welcher drei Zustände vom Typ \lstinline{pending: Option<Pending>} ( \lstinline{None, WaitNxtInput, ClipToStartVertex} ) und einen Cache für die Zeichenoperationen des Renderers besitzt. 
 
 \begin{lstlisting}
     pub struct DrawPanel {
@@ -317,19 +317,19 @@ Die angesprochene Nachricht wird, wie alle Nachrichten vom Typ \lstinline{PageMe
 Es werden zunächst einmal zwei Buttons der nachfolgend besprochenen Zeichenwerkzeuge aktiviert - der \emph{Clear-} und der \emph{Undo-Button}. Dann wird eine Überprüfung durchgeführt, ob zuvor eine \emph{Undo-Aktion} 
 durchgeführt wurde. Das wird später noch einmal thematisiert. Eben dafür wird auch die Nachricht selbst am Ende des Codeblocks noch in einen Buffer geschoben.
 Die zentrale Aufgabe dieses Aufrufs ist jedoch das hinzufügen des in der Nachricht angegebenen Punktes. Das geschieht mittels der Funktion \lstinline{fn push_vertex_to_buffer()}. Ihr wird 
-der Punkt sowie der Buffer übergeben, in welchen er eingefügt werden soll. In diesem Fall ist es der Vektor \lstinline{draw_panel.vertices}. Danahc wird noch der Cache des Renderers zurückgesetzt, wodurch alle Inhalte auf dem 
+der Punkt sowie der Buffer übergeben, in welchen er eingefügt werden soll. In diesem Fall ist es der Vektor \lstinline{draw_panel.vertices}. Danach wird noch der Cache des Renderers zurückgesetzt, wodurch alle Inhalte auf dem 
 Zeichenfenster neu gezeichnet werden.\linebreak
 
 \textbf{Zeichenwerkzeuge}\linebreak
-Der zweite Bereich des Menüs, welcher eng mit dem Zeichenfenster verbunden ist, sind die Zeichenwerkzeuge. Dafür wurde ein neuer Struct in der Datei \lstinline{tools.rs} angelet.  Bei den Zeichenwerkzeug handelt es sich im Wesentlichen um Buttons, welche verschiedene Funktionalitäten aktivieren.
+Der zweite Bereich des Menüs, welcher eng mit dem Zeichenfenster verbunden ist, sind die Zeichenwerkzeuge. Dafür wurde ein neuer Struct in der Datei \lstinline{tools.rs} angelegt.  Bei den Zeichenwerkzeug handelt es sich im Wesentlichen um Buttons, welche verschiedene Funktionalitäten aktivieren.
 Es gibt fünf solcher Buttons, welche jeder eine eigene Aufgabe erfüllen. Namentlich sind das der \emph{Draw-}, der \emph{Draw Hole-}, der \emph{Undo-}, der \emph{Redo-} und der \emph{Clear-}Button. Auf jeden davon wird im folgenden einmal gesondert eingegangen.
 Der Tool-Struct umfasst also die Zustände der Buttons sowie einigen Boolean-Variablen, welche angeben, ob ein Button aktiv ist oder nicht. Des weiteren umfasst die Implementierung dieses Structs einen Konstruktor und eine weitere Funktion \lstinline{pub fn tool_menu()}, welche das Layout der Zeichenwerkzeuge festlegt.
 Zu besseren Übersicht für den Nutzer wurden diese fünf Buttons in einer umrahmten Gruppe rechts vom Zeichenfeld angeordnet.
 
-Bevor nun auf die einzelen Buttons und deren Funktionalität eingegangen wird, soll hier kurz beschrieben sein, wie ein \lstinline{iced::button} überhaupt aufgebaut ist. 
+Bevor nun auf die einzelnen Buttons und deren Funktionalität eingegangen wird, soll hier kurz beschrieben sein, wie ein \lstinline{iced::button} überhaupt aufgebaut ist. 
 Wie angedeutet, ist ein Button ein Element aus der Iced-Bibliothek. Es besitzt einen Zustand und ein Label, also eine Beschriftung. Zusätzlich gibt es noch einen Nachricht, welche beim drücken des Buttons ausgelöst wird und neben vielen weiteren Einstellungen wie Breite und Höhe auch noch einen 
-Stile, welcher mittels eines \lstinline{StyleSheets} festgelegt werden kann. Eine Nachricht wird dadurch durch den Befehl  \lstinline{mybutton.on_press(Message)} an den Button gebundnen. 
-Zu Stilen ist im Kapitel 4.3.4 mehr beschrieben. Hier einmal der grundsetztliche Aufruf einen neunen Buttons:
+Stile, welcher mittels eines \lstinline{StyleSheets} festgelegt werden kann. Eine Nachricht wird dadurch durch den Befehl \lstinline{mybutton.on_press(Message)} an den Button gebunden. 
+Zu Stilen ist im Kapitel 4.3.4 mehr beschrieben. Hier einmal der grundsetzliche Aufruf eines neuen Buttons:
 
 
 \begin{lstlisting}
@@ -344,8 +344,8 @@ Das Layout, welches in der Funktion \lstinline{pub fn tool_menu()} festgelegt wu
 \linebreak
 
 \textbf{\small{Draw-Button}}\linebreak
-Dieser Button hat eine der wichtigsten Funktionen des Programms. Er aktiviert die Eingabe auf dem Zeichenfeld. Standartmäßig ist er aktiv, das heißt es ist möglich ihn zu drücken. Einmal gedrückt, wird er so lange 
-deaktiviert, bis ein anderer Button gedrückt wurde. Während er deaktiviert ist, das heiß er gedrückt wurde, kann man nach belieben auf dem Zeichenfeld ein Polygon durch Mausklics erzeugen. Ist dieses dann geschlossen, wird der 
+Dieser Button hat eine der wichtigsten Funktionen des Programms. Er aktiviert die Eingabe auf dem Zeichenfeld. Standardmäßig ist er aktiv, das heißt es ist möglich ihn zu drücken. Einmal gedrückt, wird er so lange 
+deaktiviert, bis ein anderer Button gedrückt wurde. Während er deaktiviert ist, das heiß er gedrückt wurde, kann man nach belieben auf dem Zeichenfeld ein Polygon durch Mausklicks erzeugen. Ist dieses dann geschlossen, wird der 
 Input wieder deaktiviert.\linebreak
 
 \textbf{\small{Draw-Hole-Button}}\linebreak
@@ -356,17 +356,17 @@ gezeichnet werden, sondern nur innerhalb des Zuvor gezeichneten Polygons. Es sol
 
 \textbf{\small{Undo-Button}}\linebreak
 Das Rückgängigmachen von Aktionen ist ein wichtiger Aspekt, wenn es um Nutzerfreundlichkeit geht. Daher wurde diese Funktion mittels des \emph{Undo-Buttons} implementiert.
-Er wird erst aktiv, wenn bereits mindestens ein Punkt auf dem Zeichenfeld gezeichnet wurde. Wird er gedrückt, so wir der zuletzt gezeichnete Eckpunkt aus dem Vektor \lstinline{draw_panel.vertices}, sowei die Nachricht \lstinline{AddPoint(Point)}
+Er wird erst aktiv, wenn bereits mindestens ein Punkt auf dem Zeichenfeld gezeichnet wurde. Wird er gedrückt, so wir der zuletzt gezeichnete Eckpunkt aus dem Vektor \lstinline{draw_panel.vertices}, sowie die Nachricht \lstinline{AddPoint(Point)}
 aus dem \lstinline{action_buffer} entfernt. In einen zweiten Buffer, den Vektor \lstinline{undo_buffer} wird dann eine Kopie dieser entfernten Nachricht eingefügt. Sie enthält auch den gelöschten Punkt.
 Dies geschieht, damit er mittels des \emph{Redo-Buttons} wieder hinzugefügt werden kann. Dazu im nachfolgenden Abschnitt mehr. Das drücken des \emph{Undo-Buttons} löst die Nachricht 
-\lstinline{PageMessgage::UndoPressed} aus, welche dann in der Funktion \lstinline{fn update()} des Page-Struct behandelt wird. Sollte das Polygon zuvor geschlossen worden sien, dann muss dieser Zustand natürlich wieder aufgehoben werden und der Zustand 
-des Zeichenautomaten \lstinline{DarwState} muss wieder auf \lstinline{Pending::WaitNxtInput} gesetzt werden. All das wird in der Update-Funktion umgesetzt. Auch wird eine Flag gesetzt, dass die zuletzt durchgeführte Aktion ein Rückgeängigmachen war. Das wir 
+\lstinline{PageMessage::UndoPressed} aus, welche dann in der Funktion \lstinline{fn update()} des Page-Struct behandelt wird. Sollte das Polygon zuvor geschlossen worden sein, dann muss dieser Zustand natürlich wieder aufgehoben werden und der Zustand 
+des Zeichenautomaten \lstinline{DarwState} muss wieder auf \lstinline{Pending::WaitNxtInput} gesetzt werden. All das wird in der Update-Funktion umgesetzt. Auch wird eine Flag gesetzt, dass die zuletzt durchgeführte Aktion ein Rückgängigmachen war. Das wir 
 für die Redo-Aktion relevant.\linebreak
 
 \textbf{\small{Redo-Button}}\linebreak
 Der \emph{Redo-Button} stellt das logische Gegenstück zum \emph{Undo-Button} dar. Aktionen, welche mittels Undo rückgängig gemacht wurden, können hiermit erneut durchgeführt wreden. Auch dieser Askept ist für die Nutzerfreundlichkeit sehr wichtig.
 Zunächst einmal ist dieser Button aber inaktiv. Erst, wenn eine Undo-Aktion durchgeführt wurde, kann der \emph{Redo-Button} gedrückt werden.
-Wird der \emph{Redo-Button} betätigt, löst er die Nachricht \lstinline{PageMessgage::RedoPressed} aus. Diese führt in der \lstinline{fn update()} des Page-Structs zu verschiedenen Abläufen.
+Wird der \emph{Redo-Button} betätigt, löst er die Nachricht \lstinline{PageMessage::RedoPressed} aus. Diese führt in der \lstinline{fn update()} des Page-Structs zu verschiedenen Abläufen.
 Als erstes wird die letzte Nachricht aus dem \lstinline{undo_buffer} entfernt und wieder in den \lstinline{action_buffer} geschrieben. Der zuvor entfernte Punkt, wird wieder in den dafür vorgesehenen Speicher eingefügt.
 Sollte es noch weitere Aktionen geben, welche rückgängig gemacht wurden, dann bleibt der Button aktiv und kann erneut gedrückt werden.
 
@@ -380,13 +380,88 @@ dann wird der \lstinline{undo_buffer} gelöscht. Das geschieht, damit keinen Pun
 Dieser Button bildet eine Ausnahme unter den Zeichenwerkzeugen, da seine Funktion eine extra Bestätigung durch ein Dialogfenster benötig, welches sich dann öffnet, wenn dieser Button gedrückt wurde. 
 Dieses Dialogfenster ist kein Element der Iced-Bibliothek. Es gehört zur Bibliothek \lstinline{iced_aw}, welche eine Erweiterung von \lstinline{iced} darstellt und weitere weniger grundlegende \ac{gui}-Elemente umfasst.
 Das verwendete Element ist eine \lstinline{iced_aw::Card}, welche man sich als Fenster im Fenster vorstellen kann. Sie besteht aus Header, Body und Footer und sendet beim schließen eine Nachricht. Im Falle dieser Arbeit ist das 
-\lstinline{PageMessage::PopUpClosed}. Der Body der Karte enthält dabei die Warnung, dass nach der Bestätigung des Löschungsvorganges der gesamte Input auf dem zeichenfenster gelöscht wird und dies nicht rückgängig gemahct werden kann.
-Diese Eindung wird mittels eines roten und eines grünen Buttons getroffen. Der rote \emph{Reject-Button} sendet dabei die Nachricht \lstinline{PageMessage::RejectClear} und setzt damit die gleich Funktionalität um, wie die Nachricht \lstinline{PageMessage::PopUpClosed}.
+\lstinline{PageMessage::PopUpClosed}. Der Body der Karte enthält dabei die Warnung, dass nach der Bestätigung des Löschungsvorganges der gesamte Input auf dem Zeichenfenster gelöscht wird und dies nicht rückgängig gemacht werden kann.
+Diese Entscheidung wird mittels eines roten und eines grünen Buttons getroffen. Der rote \emph{Reject-Button} sendet dabei die Nachricht \lstinline{PageMessage::RejectClear} und setzt damit die gleich Funktionalität um, wie die Nachricht \lstinline{PageMessage::PopUpClosed}.
 Mit dem grünen \emph{Yes-Clear-Button} wird die Löschung mittels der Nachricht \lstinline{PageMessage::ClearAll} ausgelöst. Beide Buttons schließen die Karte mit dem Dialog und lassen den Ursprünglichen \emph{Clear-Button} wieder erscheinen. 
 Ein Beispiel für einen solchen Vorgang ist im folgenden Bild zu sehen.
 %Bild clear dialog
 \linebreak 
-\textbf{Optionen}
+
+\textbf{\large{Optionen}}\linebreak
+Der dritte und letzte große Bestandteil der Menü-Seite sind die Optionen. Diese sind ebenfalls noch einmal in drei Teile geteilt, welche optisch, wie auch die Zeichenwerkzeuge, durch einen Rahmen 
+abgegrenzt werden. Bei den drei Sektionen handelt es sich um die Auswahl des Algorithmus, die Auswahl der anzuwendenden Heuristik und den weiteren Optionen.
+In den ersten beiden Bereichen werden die Auswahlmöglichkeiten durch eine Selektion mittels Radio Buttons abgebildet. Ein Radio Button bzw. eine Radio Button Gruppe hat die Eigenschaft, dass nur eine Option zur gleichen Zeit aktiv sein kann.
+Das bedeutet wenn ich drei Möglichkeiten (a), (b) und (c) habe, dann kann ich nur eine der drei, zum Beispiel (b), nicht aber zwei verschiedene, wie etwas (a) und (c), gleichzeitig auswählen.
+Die Iced-Bibliothek besitzt eine Implementierung für eben solche Radio Buttons. Man kann sie automatisch aus einem Aufzählungstypen generieren, wenn man für diesen eine Implementierung für \lstinline{impl From<Algorithm> for String} und eine Funktion 
+\lstinline{fn all()} bereitstellt. Die Funktion gibt schlichtweg alle Ausprägungen des Aufzählungstypen aus. Die String-Implementierung generiert aus einer gebenen solchen Ausprägung eine Zeichenkette.
+Anhand der Algorithmus-Auswahl sieht das dann in etwa so aus:
+
+\begin{lstlisting}
+
+    pub enum Algorithm {
+        EarClipping,
+        DelaunyTriangulation,}
+
+    impl<'a> Algorithm {
+        pub fn all() -> [Algorithm; 2] {
+            [Algorithm::EarClipping,
+             Algorithm::DelaunyTriangulation,]
+        }}
+
+    impl From<Algorithm> for String {
+        fn from(algorithm: Algorithm) -> String {
+            String::from(match algorithm {
+                Algorithm::EarClipping => "Ear Clipping",
+                Algorithm::DelaunyTriangulation => 
+                    "Delauny Triangulation",
+            })
+        }}
+\end{lstlisting}
+Man bemerke, dass hier zu Beispielzwecken die \ac{dt} als Option aufgeführt ist. Diese ist in der beiliegenden Version des Programms nicht anwählbar. Sie 
+ist als Idee der Programmerweiterung im Ausblick noch einmal angeführt.
+Die Umsetzung einer automatischen Generierung der Radio Buttons würde dann in etwa so aussehen:
+
+\begin{lstlisting}
+    Algorithm::all().iter().cloned().fold(
+        Column::new().padding(10).spacing(15),
+        |choices, algorithm| {
+            choices.push(Radio::new(
+                algorithm,
+                algorithm,
+                selection,
+                PageMessage::AlgorithmSelected,
+            ).text_size(20).size(15))
+        },
+    )
+\end{lstlisting}
+
+Wie für die Algorithmen in der Datei \lstinline{algorithm.rs} wird nach dem gleichen Schema die selbe Implementierung für die Heuristiken in der Datei \lstinline{heuristc.rs} vorgenommen.
+In der Datei \lstinline{program_settings.rs} wir nun der \lstinline{struct ProgramSettings} deklariert, welcher neben  \lstinline{algorithm: Option<Algorithm>} und \lstinline{heuristic: Option<Heuristic>}
+auch \lstinline{bools: ProgramSettingsBools}. Dieses Feld umfasst die weiteren Optionen, welche man wahlweise aus- oder anschalten kann. In der finalen Version der Software sind dies zwei Möglichkeiten.
+Die Option \emph{Stepwise Triangulation} für die Auswahl, ob der Algorithmus in Schritten oder im Ganzen ausgeführt werden soll, und die Option für den Dark Mode, welcher in Kapitel 4.3.4 beschrieben wird.
+Diese Optionen werde durch sogenannte Toggler abgebildet. Ein Toggler hat neben einer Beschriftung auf eine Variable vom Typ Boolean, welchen er je nach seiner eigenen Stellung auf \emph{ein} oder \emph{aus} auf 
+\lstinline{true} oder \lstinline{false} setzt. Anhand der Option des Dark Modes sieht das dann so aus:
+
+\begin{lstlisting}
+    Toggler::new(
+        bools.dark_mode,
+        String::from("Dark Mode"),
+        PageMessage::DarkModeToggled,
+    ).size(15).text_size(20)
+\end{lstlisting}\pagebreak
+
+\textbf{\large{Seitenübergang}}\linebreak
+Zusetztlich zu den drei großen Bereichen des Menüs gibt es noch ein weiteres Interaktionselement. Dies ist ein Button, welcher unter den Optionen am rechten Rand des Fensters platziert wurde.
+Dies ist der \emph{Confirm-Button}. Dieser ist, im Gegensatz zu den Zeichenwerkzeugen kein Button mit Sekundärstil sondern ein Primärbutton. Er betsätigt nämlich alle Einstellungen und Eingaben der Menüseite und
+regelt den Übergang auf die Iterartionsseite. Dazu wird die Nachricht \lstinline{PageMessage::ConfirmPressed} gesendet. Damit das eingegebene Polygon auch auf der nächsten wie auch letzten Seite angezeigt wird, gibt es im Page-Struct
+mehrere Funktionen, welche aufgerufen werden, sobald ein Seitenübergang stattfindet. Zuerst einmal muss der Speicher, welcher alle eingegebenen Eckpunkte beinhaltet ausgelesen werden. Dies geschieht mittels der Funktion 
+\lstinline{fn get_vertex_buffer(&mut self)}. Wurde der Buffer ausgelesen, dann muss er in das Koordinatensystem des Anzeigefensters der nächsten Seite konvertiert werden. Das ist notwendig, da alle Anzeigefensters unterschiedliche Größen besitzen.
+Das bewerkstelligt die Funktion \lstinline{fn buffer_move_center(buffer: Vec<Point>, offset_x: f32, offset_y: f32)}. Sie erhält als Eingaben neben dem Buffer auch den jeweiligen Offset in x- und y-Richtung
+zwischen den beiden Koordinatensystemen. Ist die Transformation geschehen, wird der Buffer mittels der Funktion \lstinline{fn set_vertex_buffer(&mut self, buffer: Vec<Point>)} auf die nächste Seite kopiert.
+
+Für den Übergang zwischen Menü und Iteration genügt das. Für den später noch folgenden Übergang zwischen Iteration und Resultatsseite muss zusätzlich noch der Speicher für die erzeugten Diagonalen übergeben werden.
+Dies geschieht nur mittels Kopiervorgang, da keine Koordinaten sondern Anfangs- und Endpunkte der Strecken gespeichert wurden.
+
 \subsubsection{Page - Iteration}
 \subsubsection{Page - Result}
 \subsubsection{Style und Dark Mode}
@@ -399,12 +474,12 @@ umfasst.
 Hier soll einmal exemplarisch gezeigt werden, wie ein solches \lstinline{StyleSheet} für einen \lstinline{iced::container} aussieht. Dieser beinhaltet in jeder View-Funktion den Inhalt einer Seite 
 und umfasst derher die Hintergrundfarbe \lstinline{backgroundcolor} und die Schriftfarbe \lstinline{text_color} des Anzeigefensters. 
 Zuerst wird im Aufzählungstypen \lstinline{enum WindowStyle} festgelegt, wie viele unterschiedliche Stile ein solcher Container haben kann. 
-Danach wird für jeden Stil pro Eigenschaft eine Farbe festgelegt. Alle Eigenschaften, welche dem festgelegten Standart der Iced-Bibliothek folgen sollen, werden mittels 
+Danach wird für jeden Stil pro Eigenschaft eine Farbe festgelegt. Alle Eigenschaften, welche dem festgelegten Standard der Iced-Bibliothek folgen sollen, werden mittels 
 \lstinline{..Style::default()} abgebildet. So gibt es für Container in dieser Arbeit zwei Stile, wie für die meisten anderen Element auch. Die einzige Ausnahme bilden die Buttons, welche eine rot und grüne, 
 sowie eine helle und eine dunkle Variante für Primär- und Sekundärbuttons besitzen. 
 Alle anderen Elemente des \ac{gui} haben eine helle und eine dunkle Variante. Der sogenannte \emph{Dark Mode} ist eine weit verbreitete Option für vielerlei Anwendungsprogramme. Da er für einige Nutzer ein obligatorischer Modus ist,
 ist er auch in dieser Arbeit implementiert. Er wird wie bereits erwähnt durch einen Toggler im Menü ein- oder ausgeschalten. Dadurch ändern sich alle Stile von der hellen auf die dunkel Variante oder umgekehrt. 
-Standartmäßig ist der Dark Mode allerdings aus.
+Standardmäßig ist der Dark Mode allerdings aus.
 
 \begin{lstlisting}
   
