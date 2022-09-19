@@ -463,7 +463,42 @@ Für den Übergang zwischen Menü und Iteration genügt das. Für den später no
 Dies geschieht nur mittels Kopiervorgang, da keine Koordinaten sondern Anfangs- und Endpunkte der Strecken gespeichert wurden.
 
 \subsubsection{Page - Iteration}
+
+Die zweite Seite und das eigentliche Kernstück des Programms ist die Iterartionsseite. Auf ihr spielt sich die gesamte Visualisierung des algorithmischen Ablaufs ab.
+Sie besteht aus nur zwei Teilen. Dem Vorschaufenster und der Navigationsleiste. Den Großteil der Bildfläche nimmt dabei eben jenes Vorschuafenster ein, auf dem das im Menü eingegebene 
+Polyong zu sehen ist. Hier werden auch die vom Algorithmus ermittelten Diagonalen eingezeichnet, welche die Triangulation bilden. Diese Einzeichnen geschieht schrittweise, sofern 
+im Menü die OPtion \emph{Stepwise Triangulation} auf aktiv gesetzt wurde. Anderenfalls wird die Iterartionsseite übersprungen und sofort die Ergebnisseite aufgerufen.
+
+Das Vorschaufenster wird in der Datei \lstinline{preview.rs} definiert und ist eine vereinfachte Form des Zeichenfensters. Hier ist allerding die Eingabe standardmäßig deaktiviert, da vom Benutzer keine 
+Auswahlen erwartet werden. Nur wenn die Heuristik \emph{Manual Selection} im Menü gewählt wurde, kann der Benutzer per Klick auf ein Dreieck, den nächsten Triangulationsschritt bestimmen.
+In allen anderen Fällen wird das Dreieck, welches mittels einer Diagonalen gebildet werden soll, automatisch anhand der gewählten Heuristik ausgewählt.
+
+Von einem zum nächsten Iterationsschritt gelangt der Nutzter über einen Button in der Navigationsleiste. Der \emph{Next-Button} erhöhrt den Zähler, welcher den Fortschritt der Triangulation anzeigt, 
+und lässt die Anzeige um die neu erzeugte Diagonale erweitern. Es handelt sich hierbei um einen Primärbutton, der dem Nutzer suggerieren soll, dass dies der empfohlene Weg ist, um durch die Triangulation zu navigieren.
+
+Um sich vergangene Iterationsschritte erneut anzegen zu lassen, gibt es den \emph{Previous-Button}, dieser senkt den Fortschrittszähler und zeigt den vorherigen Iterationsschritt auf dem Vorschaufenster an.
+Dabei kann man allerdings nicht weiter als bis zum ersten Schritt zurückkehren, da der Button dann deaktiviert wird. Es gibt also keine Möglichkeit, um von der Iterationsseite direkt zur Menüseite zurückzukehren.
+Damit das Anzeigen vergangener Schriite nicht als Pflicht empfunden wird, ist der \emph{Previous-Button} im Sekundärstil gehalten.
+
+Hat der Algorithmus alle Schritte durchlaufen, dann wird aus dem \emph{Next-Button} der \emph{End-Button}. Dieser kopiert den Vertex-Buffer wie auch den Diagonalen-Buffer von der Iterartionsseite auf die Ergebnisseite 
+und sendet die Nachricht \lstinline{PageMessage::EndPressed}, welche von der Update-Funktion des Pages-Structs als Signal zum Übergang auf die Ergebnisseite interpretiert wird. Der \emph{End-Button} ist ebenso wie der 
+\emph{Next-Button} ein Primärbutton.
+%bild iterationsseite
+
 \subsubsection{Page - Result}
+
+Die Ergebnisseite setzt sich aus zwei Anzeigefenstern mit zugehörigen Informationen zu den abgebildeten Triangulationen, wie auch einer Navigationsleiste zusammen.
+Dabei ist das linke der beiden gleichgroßen Fenster das jenige, welches die durchlaufene Triangulation zeigt, die auf der Iterationsseite abgebiltet war. Darunter finden sich 
+Informationen über das Zerlegte Polygon. Namentlich der durchschnittliche Flächeninhalt der Dreiecke und deren durchschnittlicher kleinster Innenwinkel. Außedem wird die Anzahl an Ecken sowie Dreiecken angezeigt.
+
+Das zweite Fenster soll in einer späteren Version eine Vergleichstriangulation, die \ac{dt}, zeigen. Ebenfalls sollen hier die Metadaten der Triangulation aufgezeigt werden.
+
+Die Navigationsleiste besteht aus zwei Buttons. Auf der linken Seite befindet sich der \emph{Exit-Button}, welcher das Programm beendet. Damit der Nutzer weiterhin das Programm benutzen möchte, um weitere Triangulationen durchzuführen,
+ist dieser Button im Sekundärstil gehalten.
+Dagegen ist der andere Button auf der rechten Seite ein Primärbutton. Seine Beschriftung zeigt \emph{Return to Menu}. Wird er gedrückt, dann wird erneut das Menü aufgerufen. Im Zeichenfenster ist noch das zuvor eingegebene Polygon zu sehen.
+Das hat den Zweck, dass der Nutzer mit dem selben Polygon aber anderen Einstellungen eine weitere Triangulation durchführen kann, welche eventuell ein besseres Ergebnis zeigt.
+Eine denkbare Funktion wäre es, dass statt der \ac{dt} auf dem zweiten Anzeigefenster die vorangegangene Triangulation angezeigt wird, sofern sich das Polygon nicht verändert hat, welches zerlegt wird.
+
 \subsubsection{Style und Dark Mode}
 Ein großer Aspekt bei der Umsetzung von \ac{gui}s sind Farben. So haben bestimmte Farben für den Menschen bestimmte Bedeutungen - etwa Rot für Gefahr oder Ablehnung.
 Dies nutzt man, um dem Benutzer bestimmte Botschaften zu übermitteln. So sind farblich hervorgehobene Buttons zum Beispiel wichtiger als graue. Hierfür müssen diese Farben festgelegt werden.
@@ -507,3 +542,4 @@ Standardmäßig ist der Dark Mode allerdings aus.
 
 \end{lstlisting}
 
+\subsubsection{Implementierung des Ear-Clipping-Algorithmus}
