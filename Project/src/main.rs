@@ -138,6 +138,7 @@ impl Pages {
                 },
                 Page::Result {
                     result_panel: ResultPanel::new(),
+                    compare_panel: ResultPanel::new(),
                     repeat_button: button::State::new(),
                     exit_button: button::State::new(),
                     dark_mode: false,
@@ -179,10 +180,16 @@ impl Pages {
                 }
                 //Iteration Page
                 1 => {
-                    
-                    if let Some(offset_x) = ((self.pages[2].get_panel_width() - self.pages[1].get_panel_width())/2).to_f32(){
-                        if let Some(offset_y) = ((self.pages[2].get_panel_height() - self.pages[1].get_panel_height())/2).to_f32() {
-                            buffer = Page::buffer_move_center(buffer, offset_x, offset_y);
+                    let width1 = self.pages[1].get_panel_width();
+                    let height1 = self.pages[1].get_panel_height();
+                    let width2 = self.pages[2].get_panel_width();
+                    let height2 = self.pages[2].get_panel_height();
+
+                    if let Some(offset_x) = ((width1 - width2)/2).to_f32(){
+                        if let Some(offset_y) = ((height1 - height2)/2).to_f32() {
+                            buffer = Page::buffer_move_center(buffer, -offset_x, -offset_y);
+                            //buffer = Page::buffer_scale(buffer, 0.35, width2, height2);
+                           
                         }
                     }
                 }
@@ -247,6 +254,7 @@ enum Page {
     },
     Result {
         result_panel: ResultPanel,
+        compare_panel: ResultPanel,
         repeat_button: button::State,
         exit_button: button::State,
         dark_mode: bool,
@@ -531,8 +539,8 @@ impl<'a> Page {
             Page::Iteration { preview_panel, dark_mode, prevoius_button, next_button, 
                end_button, current_step,  }
                 => Self::iteration( preview_panel, prevoius_button, next_button, end_button, *dark_mode, *current_step, ),
-            Page::Result { result_panel, exit_button, repeat_button ,dark_mode }
-                => Self::result(result_panel, repeat_button, exit_button , *dark_mode),
+            Page::Result { result_panel, compare_panel , exit_button, repeat_button ,dark_mode }
+                => Self::result(result_panel, compare_panel ,repeat_button, exit_button , *dark_mode),
 
         }
         .into()
@@ -580,6 +588,42 @@ impl<'a> Page {
         for mut vertex in buffer {
             vertex.x = vertex.x + offset_x;
             vertex.y = vertex.y + offset_y;
+            output.push(vertex);
+        }
+        return output;
+    }
+
+    //Function that scales vertices in a buffer with a given value so that the resulting polygon is bigger or smaller 
+    //then the given one in the buffer
+    fn buffer_scale(buffer: Vec<Point>, scale: f32, width: u16, height: u16) -> Vec<Point> {
+        
+        let mut output: Vec<Point> = vec![];
+        let width_f32 = if let Some(_width) = width.to_f32() { _width} else { 0.0 };
+        println!("{}", width_f32);
+        let height_f32 = if let Some(_height) = height.to_f32() { _height} else { 0.0 };
+        println!("{}", height_f32);
+        for mut vertex in buffer {
+
+            vertex.x = if vertex.x < width_f32/2.0 {
+                vertex.x * 1.0/scale
+            }
+            else if vertex.x > width_f32/2.0 {
+                vertex.x * scale
+            }
+            else {
+                vertex.x
+            };
+
+            vertex.y = if vertex.y < height_f32/2.0 {
+                vertex.y * 1.0/scale
+            }
+            else if vertex.y > height_f32/2.0 {
+                vertex.y * scale
+            }
+            else {
+                vertex.y
+            };
+            
             output.push(vertex);
         }
         return output;
@@ -670,7 +714,7 @@ impl<'a> Page {
             button_con = button_con.style(style::ButtonStyle::PrimaryLight);
         }
 
-        let mut tool_menu: Column<PageMessage> = Column::new();
+        let mut tool_menu: Column<PageMessage> = Column::new().width(Length::Units(500));
                                                 
             if tools.popup_clear_open {
                 tool_menu = tool_menu.height(Length::Units(400))
@@ -684,18 +728,20 @@ impl<'a> Page {
                 .push(Rule::vertical(2).style(style::RuleStyle::Light)));
 
         let draw_panel: Column<PageMessage> = Column::new()
+                                                
                                                 .push(DrawPanel::draw_panel(draw_panel)) ;
         let setting_menu: Row<PageMessage> = ProgramSettings::prog_settings(progset);
-        Self::container("")
+        Self::container("").align_items(Alignment::Center)
         .max_width(1280)
         .max_height(720)
         .spacing(0)
         
         .push(Row::new()
-            
+            .push(Space::with_width(Length::Units(170)))
             .push(draw_panel)
-            .push(Space::with_width(Length::Units(20)))
+            .push(Space::with_width(Length::Units(30)))
             .push(tool_menu)
+            .push(Space::with_width(Length::Units(150)))
            )
         .push(Space::with_height(Length::Units(20)))
         .push(setting_menu)
@@ -769,11 +815,23 @@ impl<'a> Page {
     }
 
     //Function that defines the look of the Result Page
-    fn result(result_panel: &'a mut ResultPanel, repeat_button: &'a mut button::State, exit_button: &'a mut button::State,dark_mode: bool) 
+    fn result(result_panel: &'a mut ResultPanel, compare_panel: &'a mut ResultPanel, repeat_button: &'a mut button::State, exit_button: &'a mut button::State,dark_mode: bool) 
     -> Column<'a, PageMessage> {
        
-        let result = Row::new().align_items(Alignment::Center).push(ResultPanel::result_panel(result_panel));
         
+        let result = Column::new().align_items(Alignment::Center)
+                                                        .push(Text::new("Result").size(25))
+                                                        .push(ResultPanel::result_panel(result_panel));
+        let compare = Column::new().align_items(Alignment::Center)
+                                                        .push(Text::new("Comparision").size(25))
+                                                        .push(ResultPanel::result_panel(compare_panel));
+
+        let panels = Row::new().align_items(Alignment::Center).width(Length::Fill)
+                                                        .spacing(20)
+                                                        .push(Space::with_width(Length::Fill))
+                                                        .push(result).push(compare)
+                                                        .push(Space::with_width(Length::Fill));
+
         //init all buttons with messages
         let mut button_rep = button(repeat_button, "Return \n to Menu").on_press(PageMessage::RepeatPressed);
         let mut button_exit = button(exit_button, "Exit").on_press(PageMessage::ExitPressed);
@@ -796,7 +854,7 @@ impl<'a> Page {
                                .push(Space::with_width(Length::Fill))
                                .push(button_rep);
 
-        Self::container("").push(result).push(controls)
+        Self::container("").push(panels).push(controls)
     }
 
     

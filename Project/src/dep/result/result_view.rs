@@ -24,8 +24,8 @@ impl<'a> ResultPanel {
             polygon: ResultState { 
                 cache: canvas::Cache::new() }, 
             vertices: vec![],
-            panel_width: 1280,
-            panel_height: 500
+            panel_width: 400,
+            panel_height: 400
         }
     }
 
