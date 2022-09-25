@@ -32,20 +32,121 @@ Bei dieser Arbeit gab es zwei konkurrierende Entwurfsideen, welche hier aus Grü
 durch Pfeile und Beschriftung gekennzeichnet werden. 
 Die Ideen entscheiden sich vor allem durch das erste Menü, welches einmal die Optionen für die Triangulation inkludiert - im Folgenden als \emph{Menü Entwurf - Optionen inkludiert} und einmal ein Entwurf, bei dem 
 die Optionen auf einem extra Menü nach Eingabe des Polygons aufgeführt werden. Dieser zweite Entwurf soll als \emph{Menü Entwurf - Optionen nachfolgend} bezeichnet werden.
-Klar war jedoch von Beginn an, wie die Algorithmusiteration aussehen soll. Sie wird hier nicht einzeln aufgeführt, ist aber im Abschnitt Finalentwurf zusehen.
+Klar war jedoch von Beginn an, wie die Algorithmusiteration aussehen soll. Sie wird im Abschnitt \emph{Iteration Entwurf} dargestellt.
 Zuletzt soll das Resultat des Algorithmus gezeigt werden. Auch hierfür gab es zwei unterschiedliche Konzepte. Einmal sollten zwei Anzeigen umgesetzt werden, zum einen das Ergebnis des gewählten Algorithmus und zum anderen das 
 Ergebnis aus einer \ac{dt}, welche als optimales Ergebnis gilt und einen guten Qualitätsvergleich ermöglicht. Dieser Entwurf wird als \emph{Resultat Entwurf - Vergleichsfenster} bezeichnet.
 Der andere Entwurf wird aufgrund der hier nur textlich dargestellten Metadaten als \emph{Resultat Entwurf - Metadaten} bezeichnet.
 
-\subsubsection{Menü Entwurf - Optionen inkludiert}
+
 \subsubsection{Menü Entwurf - Optionen nachfolgend}
-\subsubsection{Resultat Entwurf - Vergleichsfenster}
+\raggedbottom
+Dieser Entwurf sollte das Zeichen des Polygons in den Vordergrund stellen. Damit der Nutzer nicht von allen Optionen erschlagen wird, sondern diese nach und nach abarbeitet, wurden die Einstellungen in ein zweites Fenster 
+ausgelagert. \pagebreak
+
+\begin{figure}[t]
+    \includegraphics[width=0.9\textwidth]{bilder/menu_ohne_optionen.png}
+    \caption[Entwurf des Menüs mit nachfolgenden Optionen]{Entwurf des Menüs mit nachfolgenden Optionen. links: Zeichenfeld für Eingabe des Polygons, rechts: Buttons mit Einfluss auf das Zeichenfenster. (1) öffnet Diaglogfenster (siehe Abbildung \ref{fig:cleardia})
+    (2) Bestätigung des Polygons und Übergang in das Optionsfenster (siehe Abbildung \ref{fig:options})}
+    \label{fig:menu_ohne_optionenen}
+\end{figure}
+
+Dieses erscheint nach Eingabe und Bestätigng des Poylgons durch drücken auf den \emph{Confirm-Button}.(siehe Abbildung \ref{fig:options}) Dieser Fensterwechselt wurde mit der Nummer (2) gekennzeichnet. Die Buttons, welche sich alle in einer Box an der rechten Seite des Zeichenfeldes befinden haben alle eine Funktion,
+\begin{wrapfigure}{h}{0.6\textwidth}
+    \centering
+    \includegraphics[width=0.6\textwidth]{bilder/cleardialogue.png}
+    \caption[Öffnung des Dialogfensters]{Dialogfenster wurde durch bedienen des \emph{Clear-Buttons} aufgeklappt. Bestätigung oder Ablehnung durch den Nutzerw wird erwartet.}
+    \label{fig:cleardia}
+\end{wrapfigure}
+welche das Zeichenfeld beeinflusst. 
+Die Ausnahme ist hierbei der bereits angesprochene \emph{Confirm-Button}, welcher das eingegebene Polygon bestätigt und dann das Fenster mit den Optionen aufruft.
+Der Einfluss der Buttons auf das Zeichenfenster ist mittels Pfeilen dargestellt, da sich augenscheinlich nichts am Aussehen des Fensters ändert.
+Der \emph{Clear-Button} besitzt Pfeile nach unten. Dies soll den Übergang (1) andeuten. Dabei klappt ein Diaglogfenster an der Stelle dieses Buttons auf. Es ist dazu gedacht, um eine versehentliche Löschung aller Eingaben auf dem Zeichenfeld zu vermeiden.
+Der Nutzer muss die Löschen-Aktion hier nocheinmal bewusst bestätigen. Wurde dieser Dialog beendet, dann klappt das Dialogfenster wieder zu und der  \emph{Confirm-Button} wird wieder sichtbar. Nachfolgend ist der Entwurf in digitaler Form zu sehen.    
+    \begin{figure}[h]
+        \includegraphics[width=1\textwidth]{bilder/optionsfenster.png}
+        \caption[Ausgelagertes Optionsfenster]{Fenster, welches alle Optionen für den Algorithmus und die Software enthält. links: Vorschaufenster, darunter allgemeine Optionen. rechts: Algorithmus
+        Auswahl und Auswahlt der Heristik}
+        \label{fig:options}
+    \end{figure}
+
+Wie in Abbildung \ref{fig:options} zu sehen ist, besteht das Optionsfentser aus vier Teilen. Oben links befundet sich das Vorschaufenster, welches das zuvor eingegebene Polygon zeigt. Es soll die gedankliche Verknüftung der Eingabe zu den Optionen herstellen.
+Darunter befindet sich eine Gruppe von Togglern, welche die allgemeinen Optionen für die Ausführung des Algorithmus und dem Aussehen der Anwendung beeinhalten.
+Auf der rechten Seite befinden sich zwei Boxen, welche je eine Gruppierung von Radio Buttons umfassen. Die obere beinhaltet die Auswahl des Algorithmus. Die untere stellt die Auswahl der anzuwendenden Heuristik dar.
+Durch einen weiteren \emph{Confirm-Button} wird der Übergang zur Iterationsseite geregelt.
+
+Ein starker Nachteil dieses Entwurfs ist, dass alle Optionen, auch die allgemeinen, erst nach der ersten Eingabe zugänglich sind. Für das An- uznd Ausschalten des 
+Dark Modes ist das unvorteilhaft. Auch sind nicht so viele Optionen vorhanden, dass der Nutzer überfordert werden könnte. 
+
+Vorteilhaft hingegen hat sich die Gruppierung der Buttons sowie der Radio Buttons erwiesen. Diese Unterstützung für den Nutzer, welche Bedienelemente zur selben Klasse gehören, stellte sich als positiv heraus.
+Auch der Dialog zur Bestätigung des Löschens vermeidet eine Fehlbedienung und ist damit positiv zu bewerten.
+
+\subsubsection{Menü Entwurf - Optionen inkludiert}
+Der zweite Entwurf für das Menü beinhaltet auch ie Optionen. Dies soll dem Nutzer alle Möglichkeiten auf einen Blick darbieten. Da es nicht sehr viele Auswahlmöglichkeiten gibt, sollte dieser Entwurf nicht zu Überforderung
+des Benutzers führen. Im vorangegangenen Kapitell wurden einige Entwurfsstechniken angewendet, welche sich als vorteilhaft erwiesen. Hier sind zum Beispiel der Bestätigungsdialog und die Gruppierung ähnlicher Elemente zu nennen.
+Diese wurden in diesen zweiten Entwurf übernommen. Auch bleibt das Zeichenfeld der größte Bereich des Menüs, um dieses in den Mittelpunkt der Anwendung zu stellen.
+
+\begin{figure}[h]
+    \includegraphics[width=1\textwidth]{bilder/menu_mit_optionen.png}
+    \caption[Entwurf für das Menü mit Optionen]{Menü ähnlich dem Entwurf mit ausgelagerten Optionen. Hier im unteren Bereich drei Sektionen für die Einstellungsmöglichkeiten.}
+    \label{fig:menu_mit_optionen}
+\end{figure}
+
+Wie in der Abbildung \ref{fig:menu_mit_optionen} zu sehen ist, wurde der \emph{Confirm-Button} aus der Gruppe der Zeichenwerkzeuge ausgelagert. Das hat den Grund, dass er nicht nur die Zeichnung sondern auch alle gewählten Optionen bestätigt.
+Daher befindet er sich ganz unten rechts. Auch in den folgenden Entwürfen wird der Button für den Übergang zur nächsten Seite an dieser Stelle sein. Somit ist einen gewisse Einheitlichkeit gewährleistet.
+Die nächste Seite, welche durch den \emph{Confirm-Button} aufgerufen wird, ist, anders als im vorangegangenen Entwurf, sofort die Iterartionsseite, nicht eine weitere Seite mit Optionen.
+Die anderen Funktionen der Buttons und Optionen wurden bereits in Kapitel 4.2.1 beschrieben und sollen daher nicht an dieser Stelle erneut thematisiert werden.
+
+\subsubsection{Iteration Entwurf}
+Die Iterartionsseite bestitzt eine klar definierte Funktion. Sie soll den Algorithmus schrittweise darstellen. Dafür bedarf es lediglich weniger Interaktionselemente. 
+Zu allererst wird ein Vorschaufenster benötigt. Dieses steht im Mittelpunkt und ist daher besonders groß. Darunter befindet sich linkes ein Button, welcher es ermöglicht, die Schritte rückwerts darzustellen. Das funktioniert allerdings nur,
+solange mehr als ein Schritt druchlaufen wurde. In der Mitte des unteren Randes befindet sich eine Fortschrittsanzeige, welche die Rückkopplung zum Nutzter arstellt. Hier wird der aktuelle Schritt in Relation zur gesamten Schrittanzahl gezeigt.
+Rechts davon befindet sich der \emph{Next-Button}. Wird dieser gedrückt, dann wird auf dem Vorschaufenster der nächste Iterationsschritt angezeigt und die Fortschrittsanzeige einen Zähler nach oben gestellt.
+Sind alle Schritte abgearbeitet, dann wird über den \emph{Next-Button} die nächste Sete, die Ergebnisseite, aufgerufen.
+
+\begin{figure}[h]
+    \includegraphics[width=1\textwidth]{bilder/iteration.png}
+    \caption[Entwurf Iterartionsseite]{Iterartionsseite aus Vorschaufenster und Navigationsleiste mit Fortschrittsanzeige}
+    \label{fig:iteration}
+\end{figure}
+
+Eine Entwurfsverbesserung, welche zu einem späteren Zeitpunkt aufkam, war, dass der \emph{Next-Button} nachdem der letzte Iterationsschritt durchgeführt wurde, seine Beschriftung auf \emph{End} wechselt.
+Das soll beim Nutzer die Assoziation wecken, dass der Iterationsprozess abgeschlossen ist. Der Übergang auf die Ergebnisseite wird damit besser an den Anwender vermittelt.
+
 \subsubsection{Resultat Entwurf - Metadaten}
+Der erste Entwurf für die Ergebnisseite, auf welcher das Resultat der Algorithmusiteration zu sehen sein soll, umfasst wie die Iterartionsseite nur drei Elemente.
+Das Ergebnisfenster, welches das zerlegte Polygon zeigt, ist dabei fast seitenfüllend und damit das Zentrum der Betrachtung.
+Darunter ist auf der linken Seite der \emph{Exit-Button}. Dieser beendet das Programm. Sein Gegenstück befindet sich auf der rechten Seite. Der \emph{Return-to-Menu-Button} (im Folgenden \emph{Return-Button})  
+lässt den Nutzer, wie die Aufschrift bereits andeutet, auf die Menüseite zurückkehren. Dort wird das zuvor eingegebene Polygon im Zeichenfeld angezeigt. Es kann jetzt verändert werden. Auch können andere Einstellungen getroffen werden 
+und der Algorithmus dann erneut durchgeführt werden.
+
+Da allderings eine reine Anzeige des zerlegten Polygons wenig über seine Qualität aussagt, wurde dieser Entwurf noch angepasst. Unter dem Ergebnisfenster werden noch einige Daten über das Polygon und die Dreiecke dargestellt, welche die Zerlegung bilden.
+Das sieht dann wie folgt aus:
+
+\begin{figure}[h]
+    \includegraphics[width=1\textwidth]{bilder/ergebnis_metadaten.png}
+    \caption[Entwurf Ergebnisseite mit Metadaten]{Ergebnisseite mit Ergebnisfenster und darunter Daten über das zerlegte Polygon}
+    \label{fig:ergebnis_meta}
+\end{figure}
+
+\subsubsection{Resultat Entwurf - Vergleichsfenster}
+Eine weitere Verbesserung der Ergebnisseite stellt dieser Entwurf dar. Zwar wurde der ursprüngliche Entwurf durch die Einführung der weiteren Informationen über das Polygon verbessert, jedoch fehlt immernoch eine Vergleichsmöglickeit.
+Natürlich könnte der Nutzer mittels Bildschirmfoto und späterem Vergleich feststellen, welche seiner Einstellung die optimale Zerlegung herbeigeführt hat, jedoch ist das umständlich.
+Um diesen Vergleich zu erleichtern, wird in diesem Entwurf ein zweites Anzeigefenster hinzugefügt. Dieses soll die perfekte Zerlegung des eingegebenen Polygons sowie seine Metadaten darstellen.
+Damit kann der Nutzer feststellen, wie weit er vom Idealwert entfernt ist. Die übrigen Funktionen der Ergebnisseite werden aus dem vorangegangenen Entwurf übernommen.
+
+\begin{figure}[h]
+    \includegraphics[width=1\textwidth]{bilder/ergebnis_vergleich.png}
+    \caption[Entwurf Ergebnisseite mit Vergleichsfenster]{Ergebnisseite mit Vergleichsfenster, welches die optimale Zerleguzng des Polygons darstellt. Darunter Metadaten über die Zerlegungen.}
+    \label{fig:ergebnis_vergleich}
+\end{figure}
+
 \subsubsection{Finalentwurf}
+Der finale Entwurf setzt sich aus den besten oben angeführten Entwürfen zusammen. In Papierform umfasste er noch keine Farben oder ähnliches. Diese wurden erst in der eigentlichen Implementierung hinzugefügt, um das \ac{gui} noch weiter zu verbessern.
+In seiner Gänze umfasst der Finalentwurf also das Menü, in welchem die Optionen inklusive sind, die Iterationsseite sowie die Ergebnisseite mit Vergleichsfenster. Die übergänge zwischen den einzelnen Seiten wird wie in den jeweiligen Abschnitten beschriben geregelt.
 
 
 \subsection{GUI und Pages}
-Wie bereits in Kapitel 4.2.5 beschrieben, besteht das \ac{gui} aus drei Teilen. Diese werden durch einen Aufzählungstypen \lstinline{enum Page} dargestellt. Dieser besitzt drei Ausprägungen, wie im folgenden zu sehen, welche zusätzlich eigene Felder für die weitere 
+Wie bereits in Kapitel 4.2.6 beschrieben, besteht das \ac{gui} aus drei Teilen. Diese werden durch einen Aufzählungstypen \lstinline{enum Page} dargestellt. Dieser besitzt drei Ausprägungen, wie im folgenden zu sehen, welche zusätzlich eigene Felder für die weitere 
 Implementierung der Funktionalitäten besitzen. Dieses Struct wird in der \lstinline{main.rs} deklariert, sowie auch die anderen in diesem Abschnitt besprochenen Komponenten des Codes.
 
 \begin{lstlisting}[language=C]
@@ -245,7 +346,7 @@ Dependencies. Für dieses Projekt sieht es folgendermaßen aus:
 Das Programm kann nun mittels des Befehl \lstinline{cargo run} in der Kommandozeile ausgeführt werden.
 
 \subsubsection{Page - Menu}
-Wie bereits im Kapitel 4.2.5 zusehen war, setzt sich das Menü aus drei großen Bereichen zusammen, der Zeichenfläche, den Zeichenwerkzeugen und den Optionen. \linebreak
+Wie bereits im Kapitel 4.2.6 zusehen war, setzt sich das Menü aus drei großen Bereichen zusammen, der Zeichenfläche, den Zeichenwerkzeugen und den Optionen. \linebreak
 
 \textbf{Zeichenfläche}\linebreak
 Über die Zeichenfläche, welche der zentralste Bestandteil des Menüs ist, wird das Polygon eingegeben, welches im weiteren Verlauf dann mittels des gewählten Algorithmus zerlegt werden soll.
@@ -465,7 +566,7 @@ Dies geschieht nur mittels Kopiervorgang, da keine Koordinaten sondern Anfangs- 
 \subsubsection{Page - Iteration}
 
 Die zweite Seite und das eigentliche Kernstück des Programms ist die Iterartionsseite. Auf ihr spielt sich die gesamte Visualisierung des algorithmischen Ablaufs ab.
-Sie besteht aus nur zwei Teilen. Dem Vorschaufenster und der Navigationsleiste. Den Großteil der Bildfläche nimmt dabei eben jenes Vorschuafenster ein, auf dem das im Menü eingegebene 
+Sie besteht aus nur zwei Teilen. Dem Vorschaufenster und der Navigationsleiste. Den Großteil der Bildfläche nimmt dabei eben jenes Vorschaufenster ein, auf dem das im Menü eingegebene 
 Polyong zu sehen ist. Hier werden auch die vom Algorithmus ermittelten Diagonalen eingezeichnet, welche die Triangulation bilden. Diese Einzeichnen geschieht schrittweise, sofern 
 im Menü die OPtion \emph{Stepwise Triangulation} auf aktiv gesetzt wurde. Anderenfalls wird die Iterartionsseite übersprungen und sofort die Ergebnisseite aufgerufen.
 
@@ -542,4 +643,4 @@ Standardmäßig ist der Dark Mode allerdings aus.
 
 \end{lstlisting}
 
-\subsubsection{Implementierung des Ear-Clipping-Algorithmus}
+%\subsubsection{Implementierung des Ear-Clipping-Algorithmus}
