@@ -421,6 +421,13 @@ Die zentrale Aufgabe dieses Aufrufs ist jedoch das hinzufügen des in der Nachri
 der Punkt sowie der Buffer übergeben, in welchen er eingefügt werden soll. In diesem Fall ist es der Vektor \lstinline{draw_panel.vertices}. Danach wird noch der Cache des Renderers zurückgesetzt, wodurch alle Inhalte auf dem 
 Zeichenfenster neu gezeichnet werden.\linebreak
 
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.8\textwidth]{bilder/menu.png}
+    \caption[Menüseite der Anwendung]{Menüseite der Anwendung als Bildschirmfoto}
+    
+\end{figure}
+
 \textbf{Zeichenwerkzeuge}\linebreak
 Der zweite Bereich des Menüs, welcher eng mit dem Zeichenfenster verbunden ist, sind die Zeichenwerkzeuge. Dafür wurde ein neuer Struct in der Datei \lstinline{tools.rs} angelegt.  Bei den Zeichenwerkzeug handelt es sich im Wesentlichen um Buttons, welche verschiedene Funktionalitäten aktivieren.
 Es gibt fünf solcher Buttons, welche jeder eine eigene Aufgabe erfüllen. Namentlich sind das der \emph{Draw-}, der \emph{Draw Hole-}, der \emph{Undo-}, der \emph{Redo-} und der \emph{Clear-}Button. Auf jeden davon wird im folgenden einmal gesondert eingegangen.
@@ -441,7 +448,6 @@ Zu Stilen ist im Kapitel 4.3.4 mehr beschrieben. Hier einmal der grundsetzliche 
 \end{lstlisting}
 
 Das Layout, welches in der Funktion \lstinline{pub fn tool_menu()} festgelegt wurde, ist im nachfolgenden Bild noch einmal als Ausschnitt aus dem vollständigen Menü zusehen.
-%Bild Tools
 \linebreak
 
 \textbf{\small{Draw-Button}}\linebreak
@@ -480,13 +486,16 @@ dann wird der \lstinline{undo_buffer} gelöscht. Das geschieht, damit keinen Pun
 \textbf{\small{Clear-Button}}\linebreak
 Dieser Button bildet eine Ausnahme unter den Zeichenwerkzeugen, da seine Funktion eine extra Bestätigung durch ein Dialogfenster benötig, welches sich dann öffnet, wenn dieser Button gedrückt wurde. 
 Dieses Dialogfenster ist kein Element der Iced-Bibliothek. Es gehört zur Bibliothek \lstinline{iced_aw}, welche eine Erweiterung von \lstinline{iced} darstellt und weitere weniger grundlegende \ac{gui}-Elemente umfasst.
-Das verwendete Element ist eine \lstinline{iced_aw::Card}, welche man sich als Fenster im Fenster vorstellen kann. Sie besteht aus Header, Body und Footer und sendet beim schließen eine Nachricht. Im Falle dieser Arbeit ist das 
-\lstinline{PageMessage::PopUpClosed}. Der Body der Karte enthält dabei die Warnung, dass nach der Bestätigung des Löschungsvorganges der gesamte Input auf dem Zeichenfenster gelöscht wird und dies nicht rückgängig gemacht werden kann.
-Diese Entscheidung wird mittels eines roten und eines grünen Buttons getroffen. Der rote \emph{Reject-Button} sendet dabei die Nachricht \lstinline{PageMessage::RejectClear} und setzt damit die gleich Funktionalität um, wie die Nachricht \lstinline{PageMessage::PopUpClosed}.
+Das verwendete Element ist eine \lstinline{iced_aw::Card}, welche man sich als Fenster im Fenster vorstellen kann. Sie besteht aus Header, Body und Footer und sendet beim schließen eine Nachricht. 
+
+\begin{wrapfigure}{h}{0.35\textwidth}
+    \includegraphics[width=0.34\textwidth]{bilder/clear_dialog.png}
+    \caption[Clear-Dialogfenster]{offenes Clear-Diaglogfenster auf der Menüseite}
+\end{wrapfigure}
+Im Falle dieser Arbeit ist das \lstinline{PageMessage::PopUpClosed}. Der Body der Karte enthält dabei die Warnung, dass nach der Bestätigung des Löschungsvorganges der gesamte Input auf dem Zeichenfenster gelöscht wird und dies nicht rückgängig gemacht werden kann.
+Diese Entscheidung wird mittels eines roten und eines grünen Buttons getroffen. Der rote \emph{Reject-Button} sendet dabei die Nachricht \lstinline{PageMessage::RejectClear} und setzt damit die gleich Funktionalität um wie die Nachricht \lstinline{PageMessage::PopUpClosed}.
 Mit dem grünen \emph{Yes-Clear-Button} wird die Löschung mittels der Nachricht \lstinline{PageMessage::ClearAll} ausgelöst. Beide Buttons schließen die Karte mit dem Dialog und lassen den Ursprünglichen \emph{Clear-Button} wieder erscheinen. 
-Ein Beispiel für einen solchen Vorgang ist im folgenden Bild zu sehen.
-%Bild clear dialog
-\linebreak 
+Ein Beispiel für einen solchen Vorgang ist im folgenden Bild zu sehen.\linebreak 
 
 \textbf{\large{Optionen}}\linebreak
 Der dritte und letzte große Bestandteil der Menü-Seite sind die Optionen. Diese sind ebenfalls noch einmal in drei Teile geteilt, welche optisch, wie auch die Zeichenwerkzeuge, durch einen Rahmen 
@@ -584,7 +593,12 @@ Damit das Anzeigen vergangener Schriite nicht als Pflicht empfunden wird, ist de
 Hat der Algorithmus alle Schritte durchlaufen, dann wird aus dem \emph{Next-Button} der \emph{End-Button}. Dieser kopiert den Vertex-Buffer wie auch den Diagonalen-Buffer von der Iterartionsseite auf die Ergebnisseite 
 und sendet die Nachricht \lstinline{PageMessage::EndPressed}, welche von der Update-Funktion des Pages-Structs als Signal zum Übergang auf die Ergebnisseite interpretiert wird. Der \emph{End-Button} ist ebenso wie der 
 \emph{Next-Button} ein Primärbutton.
-%bild iterationsseite
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.8\textwidth]{bilder/iteration_final.png}
+    \caption[Iterationsseite der Anwendung]{Iterartionsseite der Anwendung als Bildschirmfoto}
+\end{figure}
 
 \subsubsection{Page - Result}
 
@@ -599,6 +613,8 @@ ist dieser Button im Sekundärstil gehalten.
 Dagegen ist der andere Button auf der rechten Seite ein Primärbutton. Seine Beschriftung zeigt \emph{Return to Menu}. Wird er gedrückt, dann wird erneut das Menü aufgerufen. Im Zeichenfenster ist noch das zuvor eingegebene Polygon zu sehen.
 Das hat den Zweck, dass der Nutzer mit dem selben Polygon aber anderen Einstellungen eine weitere Triangulation durchführen kann, welche eventuell ein besseres Ergebnis zeigt.
 Eine denkbare Funktion wäre es, dass statt der \ac{dt} auf dem zweiten Anzeigefenster die vorangegangene Triangulation angezeigt wird, sofern sich das Polygon nicht verändert hat, welches zerlegt wird.
+
+%bild result page
 
 \subsubsection{Style und Dark Mode}
 Ein großer Aspekt bei der Umsetzung von \ac{gui}s sind Farben. So haben bestimmte Farben für den Menschen bestimmte Bedeutungen - etwa Rot für Gefahr oder Ablehnung.
@@ -618,7 +634,6 @@ ist er auch in dieser Arbeit implementiert. Er wird wie bereits erwähnt durch e
 Standardmäßig ist der Dark Mode allerdings aus.
 
 \begin{lstlisting}
-  
     pub enum WindowStyle {
         Light,
         Dark
@@ -637,10 +652,16 @@ Standardmäßig ist der Dark Mode allerdings aus.
                     WindowStyle::Dark => Some(Color::WHITE),
                 },
                 ..container::Style::default()
-            }
-        }
-    }
+            }}}
 
 \end{lstlisting}
 
+Im nachfolgenden Bild ist der Dark Mode für das Menü als Beispiel angeführt.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.8\textwidth]{bilder/darkmode.png}
+    \caption[Menü im Dark Mode]{Das Menü der Anwendung dargestellt mit aktiviertem Dark Mode}
+    
+\end{figure}
 %\subsubsection{Implementierung des Ear-Clipping-Algorithmus}
