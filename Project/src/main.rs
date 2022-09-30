@@ -171,27 +171,30 @@ impl Pages {
                     //x: width of draw_panel = 600         | y: height of draw_panel = 400
                     //   width of preview_panel = 1280     |    height of preview_panel = 500
                     // => offset_x = (1280 - 600)/ 2 = 340 | => offset_y = (500 - 400)/2 = 50
-                    if let Some(offset_x) = ((self.pages[1].get_panel_width() - self.pages[0].get_panel_width())/2).to_f32(){
-                        if let Some(offset_y) = ((self.pages[1].get_panel_height() - self.pages[0].get_panel_height())/2).to_f32() {
-                            buffer = Page::buffer_move_center(buffer, offset_x, offset_y);
-                        }
-                    }
+
+                    let width_in = self.pages[0].get_panel_width();
+                    let height_in = self.pages[0].get_panel_height();
+                    let width_out = self.pages[1].get_panel_width();
+                    let height_out = self.pages[1].get_panel_height();
+
+                    buffer = Page::buffer_move_center(buffer, width_out, height_out);
+                    //buffer = Page::buffer_scale(buffer, width_in, width_out, height_in, height_out);  
+                    
                     
                 }
                 //Iteration Page
                 1 => {
-                    let width1 = self.pages[1].get_panel_width();
-                    let height1 = self.pages[1].get_panel_height();
-                    let width2 = self.pages[2].get_panel_width();
-                    let height2 = self.pages[2].get_panel_height();
-
-                    if let Some(offset_x) = ((width1 - width2)/2).to_f32(){
-                        if let Some(offset_y) = ((height1 - height2)/2).to_f32() {
-                            buffer = Page::buffer_move_center(buffer, -offset_x, -offset_y);
-                            //buffer = Page::buffer_scale(buffer, 0.35, width2, height2);
-                           
-                        }
-                    }
+                    let width_in = self.pages[1].get_panel_width();
+                    let height_in = self.pages[1].get_panel_height();
+                    let width_out = self.pages[2].get_panel_width();
+                    let height_out = self.pages[2].get_panel_height();
+              
+                    
+                    //scale vertices in buffer
+                    buffer = Page::buffer_scale(buffer, width_in, width_out, height_in, height_out);
+                    //move buffer to center
+                    buffer = Page::buffer_move_center(buffer, width_out, height_out);   
+                                                      
                 }
 
                 //other values do not accure but can be added by adding new pages
@@ -581,49 +584,63 @@ impl<'a> Page {
 
     //Function that moves all vertices in a buffer with a given offset so that the resulting polygon is placed
     //in the center of the new canvas
-    fn buffer_move_center(buffer: Vec<Point>, offset_x: f32, offset_y: f32) -> Vec<Point> {
+    fn buffer_move_center(buffer: Vec<Point>, width: u16, height: u16) -> Vec<Point> {
         
         let mut output: Vec<Point> = vec![];
+        //get bounding box around polygon
+        let mut min_x = buffer[0].x;
+        let mut min_y = buffer[0].y;
+        let mut max_x = buffer[0].x;
+        let mut max_y = buffer[0].y;
 
-        for mut vertex in buffer {
-            vertex.x = vertex.x + offset_x;
-            vertex.y = vertex.y + offset_y;
-            output.push(vertex);
+        for vertex in buffer {
+            if vertex.x < min_x { min_x = vertex.x}
+            if vertex.x > max_x { max_x = vertex.x}
+            if vertex.y < min_y { min_y = vertex.y}
+            if vertex.y > max_y { max_y = vertex.y}
+            
+            output.push(vertex)
         }
+        //getting dimensions of canvas
+        let width_f32 = if let Some(width_f32) = width.to_f32(){ width_f32 } else { 0.0 };
+        let height_f32 = if let Some(height_f32) = height.to_f32(){ height_f32 } else { 0.0 };
+
+        //calculation offsets
+        let offset_x = width_f32/2.0 - (min_x + (max_x - min_x)/2.0);
+        let offset_y = height_f32/2.0 - (min_y + (max_y - min_y)/2.0);
+
+        //move the polygon to the center of the canvas
+        for i in 0..output.len(){
+            output[i].x += offset_x;
+            output[i].y += offset_y;
+            
+        }
+
         return output;
     }
 
     //Function that scales vertices in a buffer with a given value so that the resulting polygon is bigger or smaller 
     //then the given one in the buffer
-    fn buffer_scale(buffer: Vec<Point>, scale: f32, width: u16, height: u16) -> Vec<Point> {
+    fn buffer_scale(buffer: Vec<Point>, width_in: u16, width_out: u16, height_in: u16, height_out: u16) -> Vec<Point> {
         
-        let mut output: Vec<Point> = vec![];
-        let width_f32 = if let Some(_width) = width.to_f32() { _width} else { 0.0 };
-        println!("{}", width_f32);
-        let height_f32 = if let Some(_height) = height.to_f32() { _height} else { 0.0 };
-        println!("{}", height_f32);
+        //getting dimensions of input and output canvas
+        let width_in_f32 = if let Some(width_f32) = width_in.to_f32(){ width_f32 } else { 0.0 };
+        let height_in_f32 = if let Some(height_f32) = height_in.to_f32(){ height_f32 } else { 0.0 };
+        let width_out_f32 = if let Some(width_f32) = width_out.to_f32(){ width_f32 } else { 0.0 };
+        let height_out_f32 = if let Some(height_f32) = height_out.to_f32(){ height_f32 } else { 0.0 };
+
+        //check which difference in dimension is bigger and get scale
+        let diff_x = num_traits::abs(width_in_f32 - width_out_f32);
+        let diff_y = num_traits::abs(height_in_f32 - height_out_f32);
+
+        let scale = if diff_x > diff_y {  width_out_f32/width_in_f32 } else {height_out_f32/height_in_f32};
+        
+        //apply scale to vertices
+        let mut output = vec![];
         for mut vertex in buffer {
 
-            vertex.x = if vertex.x < width_f32/2.0 {
-                vertex.x * 1.0/scale
-            }
-            else if vertex.x > width_f32/2.0 {
-                vertex.x * scale
-            }
-            else {
-                vertex.x
-            };
-
-            vertex.y = if vertex.y < height_f32/2.0 {
-                vertex.y * 1.0/scale
-            }
-            else if vertex.y > height_f32/2.0 {
-                vertex.y * scale
-            }
-            else {
-                vertex.y
-            };
-            
+            vertex.x = vertex.x * scale;
+            vertex.y = vertex.y * scale;
             output.push(vertex);
         }
         return output;
@@ -818,13 +835,35 @@ impl<'a> Page {
     fn result(result_panel: &'a mut ResultPanel, compare_panel: &'a mut ResultPanel, repeat_button: &'a mut button::State, exit_button: &'a mut button::State,dark_mode: bool) 
     -> Column<'a, PageMessage> {
        
+        //getting data for result:
+        let num_verts_res = result_panel.vertices.len();
+        let num_triangles_res = num_verts_res - 2;
+        let avg_area_res = "to be implemented";
+        let avg_angle_res = "to be implemented";
+
+        //getting data for comparison:
+        let num_verts_comp = "to be implemented";
+        let num_triangles_comp = "to be implemented";
+        let avg_area_comp = "to be implemented";
+        let avg_angle_comp = "to be implemented";
         
         let result = Column::new().align_items(Alignment::Center)
                                                         .push(Text::new("Result").size(25))
-                                                        .push(ResultPanel::result_panel(result_panel));
+                                                        .push(ResultPanel::result_panel(result_panel))
+                                                        .push(Column::new().align_items(Alignment::Start)
+                                                            .push(Text::new(format!("Number of Verticies: {}", num_verts_res)))
+                                                            .push(Text::new(format!("Number of Triangles: {}", num_triangles_res)))
+                                                            .push(Text::new(format!("Avg. Trinagle Area:  {}", avg_area_res)))
+                                                            .push(Text::new(format!("Avg. Minimum Angle:  {}", avg_angle_res))));
+
         let compare = Column::new().align_items(Alignment::Center)
                                                         .push(Text::new("Comparision").size(25))
-                                                        .push(ResultPanel::result_panel(compare_panel));
+                                                        .push(ResultPanel::result_panel(compare_panel))
+                                                        .push(Column::new().align_items(Alignment::Start)
+                                                            .push(Text::new(format!("Number of Verticies: {}", num_verts_comp)))
+                                                            .push(Text::new(format!("Number of Triangles: {}", num_triangles_comp)))
+                                                            .push(Text::new(format!("Avg. Trinagle Area:  {}", avg_area_comp)))
+                                                            .push(Text::new(format!("Avg. Minimum Angle:  {}", avg_angle_comp))));
 
         let panels = Row::new().align_items(Alignment::Center).width(Length::Fill)
                                                         .spacing(20)
