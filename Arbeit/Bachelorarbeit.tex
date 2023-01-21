@@ -1,4 +1,5 @@
-\documentclass[12pt, twoside]{article}
+\documentclass[12pt, onesided]{article}
+%\documentclass{TUBAFarbeiten}
 \usepackage{setspace}
 
 \usepackage{amsmath, amssymb, amscd, amsthm, amsfonts}
@@ -17,7 +18,6 @@
 \usepackage{tikz}
 \usepackage{multirow}
 
-% change language to german
 \usepackage[scaled=0.9]{helvet}
 \usepackage{courier}
 \usepackage[utf8]{inputenc}
@@ -30,12 +30,6 @@
 % for titleing
 \usepackage{titling}
 
-\newcommand{\subtitle}[1]{%
-  \posttitle{%
-    \par\end{center}
-    \begin{center}\large#1\end{center}
-    \vskip0.5em}%
-}
 % -----------
 
 % for code style
@@ -71,8 +65,21 @@
 % usesul macros
 \newcommand{\lstin}[1]{\lstinline[language=C]{#1}}
 
-\begin{document}
+% \TUBAFFakultaet{Fakultät für Mathematik und Informatik}
+% \TUBAFInstitut{Institut für Informatik}
+% \TUBAFLehrstuhl{Lehrstuhl für Ubiquitous Computing and Smart Systems}
+% \TUBAFTitel[InAkVisECA]{Eine interaktive Visualisierungssoftware des Ear-Clipping-Algorithmus zur Triangulation von Polygonen}
+% \TUBAFBetreuer{Prof. Dr. Bastian Pfleging}
+% \TUBAFKorrektor{Jonas Treumer, M.Sc.}
+% \TUBAFAutor[C. P. Pooch]{Christoph Paul Pooch}
+% \TUBAFStudiengang{Angewandte Informatik}
+% \TUBAFVertiefung{Technik}
+% \TUBAFMatrikel{64664}
+% \TUBAFDatum[2022-10-10]{10. Oktober 2022}
 
+\begin{document}
+%\maketitle
+%\pagebreak
 \pagenumbering{gobble}
 \raggedbottom
 \tableofcontents
@@ -106,7 +113,6 @@
 \include{sections/theoretischeGrundlagen}
 \include{sections/verwandteArbeiten}
 \include{sections/praxisTeil}
-%\include{sections/auswertung}
 \include{sections/ausblick}
 
 \end{onehalfspacing}
