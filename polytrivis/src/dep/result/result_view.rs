@@ -1,4 +1,4 @@
-use super::super::modules::{geometry::{Line, Circle},message::PageMessage};
+use super::super::modules::{geometry::{Line, Circle, Vertex},message::PageMessage};
 
 use iced::{
     canvas::event::{self, Event, },
@@ -13,7 +13,7 @@ pub struct ResultState {
 
 pub struct ResultPanel {
    pub polygon: ResultState,
-   pub vertices: Vec<Point>,
+   pub vertices: Vec<Vertex>,
    pub panel_width: u16,
    pub panel_height: u16,
 }
@@ -44,7 +44,7 @@ impl<'a> ResultPanel {
 }
 
 impl ResultState {
-    pub fn view<'a>(&'a mut self,  vertices: Vec<Point>, panel_width: u16, panel_height: u16) -> Element<'a, Point> {
+    pub fn view<'a>(&'a mut self,  vertices: Vec<Vertex>, panel_width: u16, panel_height: u16) -> Element<'a, Point> {
         Canvas::new(PreviewPolygonOutLine {
             state: self,
             vertices,
@@ -63,7 +63,7 @@ impl ResultState {
 
 struct PreviewPolygonOutLine<'a> {
    pub state: &'a mut ResultState,
-   pub vertices: Vec<Point>,
+   pub vertices: Vec<Vertex>,
 
 }
 
@@ -75,11 +75,11 @@ impl<'a> canvas::Program<Point> for PreviewPolygonOutLine<'a> {
     fn draw(&self, bounds: Rectangle, _cursor: Cursor) -> Vec<Geometry> {
         let content =
             self.state.cache.draw(bounds.size(), |frame: &mut Frame| {
-                Line::draw_all(&self.vertices, frame);
-                Circle::draw_all(&self.vertices, 3.0,frame);
+                Line::draw_all(&Vertex::without_id(self.vertices.to_vec()), frame);
+                Circle::draw_all_vertex(&self.vertices, 3.0,frame);
                 if let Some(from) = self.vertices.first() {
                     if let Some(to) = self.vertices.last() { 
-                        Line::draw(*from, *to, frame);}}  
+                        Line::draw(Point::new(from.x, from.y), Point::new(to.x , to.y), frame);}}  
                 frame.stroke(
                     &Path::rectangle(Point::ORIGIN, frame.size()),
                     Stroke::default(),

@@ -6,6 +6,8 @@ use iced::{
     mouse, Point, Rectangle, Column, Length, Element,  Color
 };
 
+
+
 #[derive(Default)]
 pub struct DrawState {
     pending: Option<Pending>,
@@ -132,7 +134,7 @@ impl<'a> canvas::Program<Point> for PolygonOutLine<'a> {
                                             self.closed = true;
                                             self.ignore_input = true;
                                             self.state.request_redraw();
-                                            self.state.pending = Some(Pending::ClipToStartVertex{
+                                            self.state.pending = Some(Pending::ClipToStartPoint{
                                                 last: *from, 
                                                 first: *to
                                             });
@@ -161,7 +163,7 @@ impl<'a> canvas::Program<Point> for PolygonOutLine<'a> {
                            
                             }
 
-                            Some(Pending::ClipToStartVertex {   ..  } )=> {
+                            Some(Pending::ClipToStartPoint {   ..  } )=> {
                                 
                                 None
                             }
@@ -227,7 +229,7 @@ impl<'a> canvas::Program<Point> for PolygonOutLine<'a> {
 #[derive(Debug, Clone, Copy)]
 enum Pending {
     WaitNxtInput { from: Point },
-    ClipToStartVertex {last: Point, first: Point},
+    ClipToStartPoint {last: Point, first: Point},
    
 }
 
@@ -252,7 +254,7 @@ impl Pending {
                     
                 }
 
-                Pending::ClipToStartVertex {last, first }=> {
+                Pending::ClipToStartPoint {last, first }=> {
 
                             let line = Path::line(last,first);
                             frame.stroke(&line, Stroke::default().with_width(2.0));   

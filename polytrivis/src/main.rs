@@ -5,13 +5,18 @@ use iced::{button,
 use num_traits::cast::ToPrimitive;
 mod dep;
 use dep::{modules::{style, style::button, message::{PageMessage, Message},
-    },  };
+    }, eca_primitiv::grid::SegState,  };
 
 use dep::menu::{program_settings::ProgramSettings, tools::Tools, draw_panel::{DrawPanel, DrawState}, };
 
 use dep::iteration::preview::PreviewPanel;
 
 use dep::result::result_view::ResultPanel;
+
+use dep::eca_primitiv::grid::{Grid, get_reflex_vertices};
+use dep::eca_primitiv::eca::perform_primitiv_eca_step;
+
+use dep::modules::geometry::Vertex;
 
 
 pub fn main() -> iced::Result {
@@ -172,8 +177,8 @@ impl Pages {
                     //   width of preview_panel = 1280     |    height of preview_panel = 500
                     // => offset_x = (1280 - 600)/ 2 = 340 | => offset_y = (500 - 400)/2 = 50
 
-                    let width_in = self.pages[0].get_panel_width();
-                    let height_in = self.pages[0].get_panel_height();
+                    // let width_in = self.pages[0].get_panel_width();
+                    // let height_in = self.pages[0].get_panel_height();
                     let width_out = self.pages[1].get_panel_width();
                     let height_out = self.pages[1].get_panel_height();
 
@@ -470,6 +475,7 @@ impl<'a> Page {
 
             PageMessage::ConfirmPressed => {
                 //conversion to grid and execute algorithm with heuristc and settings
+
                
             }
 
@@ -495,6 +501,12 @@ impl<'a> Page {
                 if let Page::Iteration { preview_panel, current_step , ..} = self {
                     
                     *current_step += 1;
+                    
+                    let tupel = perform_primitiv_eca_step(&mut preview_panel.grid, 
+                                &mut preview_panel.diagonals);
+                    preview_panel.grid.vertices = tupel.0;
+                    preview_panel.grid.reflex_verts = tupel.1;
+                    preview_panel.diagonals = tupel.2;
 
                     preview_panel.polygon.request_redraw()
                 }
@@ -554,10 +566,10 @@ impl<'a> Page {
     }
 
     //function that returns the vertex buffer of a page
-    fn get_vertex_buffer(&mut self) -> Vec<Point> {
+    fn get_vertex_buffer(&mut self) -> Vec<Vertex> {
         match self {
             Page::Menu { draw_panel, .. } => {
-                (*draw_panel.vertices).to_vec()
+                Vertex::convert_to_vertex_buffer((*draw_panel.vertices).to_vec())
             }
             Page::Iteration { preview_panel, .. } => {
                 (*preview_panel.vertices).to_vec()
@@ -569,12 +581,18 @@ impl<'a> Page {
     }
 
     //function that sets the vertex buffer of a page to a given buffer
-    fn set_vertex_buffer(&mut self, vertex_buffer:  Vec<Point>)  {
+    fn set_vertex_buffer(&mut self, vertex_buffer:  Vec<Vertex>)  {
         match self {
             Page::Menu { .. } => {
             }
             Page::Iteration { preview_panel, .. } => {
-               preview_panel.vertices = vertex_buffer;
+                let buffer = vertex_buffer.clone();
+                preview_panel.vertices = vertex_buffer;
+                preview_panel.grid.vertices = buffer;
+                preview_panel.grid.reflex_verts = get_reflex_vertices(&mut preview_panel.grid.vertices);
+                Grid::init_segments(&mut preview_panel.grid );
+                
+                
             }
             Page::Result { result_panel, .. } => {
                 result_panel.vertices =  vertex_buffer;
@@ -584,9 +602,9 @@ impl<'a> Page {
 
     //Function that moves all vertices in a buffer with a given offset so that the resulting polygon is placed
     //in the center of the new canvas
-    fn buffer_move_center(buffer: Vec<Point>, width: u16, height: u16) -> Vec<Point> {
+    fn buffer_move_center(buffer: Vec<Vertex>, width: u16, height: u16) -> Vec<Vertex> {
         
-        let mut output: Vec<Point> = vec![];
+        let mut output: Vec<Vertex> = vec![];
         //get bounding box around polygon
         let mut min_x = buffer[0].x;
         let mut min_y = buffer[0].y;
@@ -621,7 +639,7 @@ impl<'a> Page {
 
     //Function that scales vertices in a buffer with a given value so that the resulting polygon is bigger or smaller 
     //then the given one in the buffer
-    fn buffer_scale(buffer: Vec<Point>, width_in: u16, width_out: u16, height_in: u16, height_out: u16) -> Vec<Point> {
+    fn buffer_scale(buffer: Vec<Vertex>, width_in: u16, width_out: u16, height_in: u16, height_out: u16) -> Vec<Vertex> {
         
         //getting dimensions of input and output canvas
         let width_in_f32 = if let Some(width_f32) = width_in.to_f32(){ width_f32 } else { 0.0 };
