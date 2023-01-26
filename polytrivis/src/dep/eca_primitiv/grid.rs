@@ -26,6 +26,11 @@ pub enum SegState {
     Reflex, None
 }
 
+pub struct Stats {
+    pub min_angles: Vec<f32>,
+    pub areas: Vec<f32>,
+}
+
 impl<'a> Grid {
     pub fn new(ankor: Point, width: u16, height: u16, vertices: Vec<Vertex>, ) -> Grid {
         Grid {
@@ -107,7 +112,7 @@ impl<'a> GridSegment {
             let mut list = seg.id_list.clone();
 
             let mut i: usize = 0;
-            
+
             while  i < seg.id_list.len() {
                 if seg.id_list[i] == id {  list.remove(i);}
                 i += 1;
@@ -122,6 +127,16 @@ impl<'a> GridSegment {
 
     
 
+}
+
+impl Stats {
+    pub fn new() -> Stats{
+        Stats { min_angles: vec![], areas: vec![] }
+    }
+
+    pub fn new_from_values(angles: Vec<f32>, areas: Vec<f32>) -> Stats {
+        Stats { min_angles: angles, areas, }
+    }
 }
 
 //calculates the signum of a vertex
@@ -176,3 +191,5 @@ pub fn get_reflex_vertices(verts: &mut Vec<Vertex>) -> Vec<Vertex> {
     
     return reflex_buffer;
 }
+
+

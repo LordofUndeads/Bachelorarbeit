@@ -7,7 +7,7 @@ use iced::{
     mouse, Point, Rectangle, Column, Length, Element, Alignment
 };
 
-use super::super::super::dep::eca_primitiv::grid::{Grid};
+use super::super::super::dep::eca_primitiv::grid::{Grid, Stats};
 
 #[derive(Default)]
 pub struct PreviewState {
@@ -20,6 +20,7 @@ pub struct PreviewPanel {
    pub vertices: Vec<Vertex>,
    pub diagonals: Vec<Line>,
    pub grid: Grid,
+   pub stats: Stats,
    pub panel_width: u16,
    pub panel_height: u16,
    pub ignore_input: bool,
@@ -36,6 +37,7 @@ impl<'a> PreviewPanel {
             vertices: vec![],
             diagonals: vec![],
             grid: Grid::new(Point::new(0.0,0.0), 1280, 500, vec![], ),
+            stats: Stats::new(),
             panel_width: 1280,
             panel_height: 500,
             ignore_input: true,

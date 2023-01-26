@@ -1,15 +1,17 @@
+use std::f32::consts::PI;
+
 use iced::Point;
 use crate::dep::modules::geometry::Vertex;
 
 use super::super::modules::geometry::{Line, BoundingBox};
-use super::grid::{Grid, SegState, get_signum_of_det, GridSegment};
+use super::grid::{Grid, SegState, get_signum_of_det, GridSegment, Stats};
 
-pub fn perform_primitiv_eca_step( grid: &mut Grid, diagonal_buffer: &mut Vec<Line>) -> (Vec<Vertex>,Vec<Vertex>,Vec<Line>){
+pub fn perform_primitiv_eca_step( grid: &mut Grid, diagonal_buffer: &mut Vec<Line>) -> (Vec<Vertex>,Vec<Vertex>,Vec<Line>, (f32, f32)){
 
     let vertices =  &mut grid.vertices;
     let reflex_vertices =  &mut grid.reflex_verts;
     let mut num_of_verts = vertices.len();
-
+    let mut stat_tupel= (0.0, 0.0);
     //get first convex vertex and try Ear Clipping, if not possible go on with next convex vertex
     for i in 0..num_of_verts -1{
        
@@ -21,13 +23,16 @@ pub fn perform_primitiv_eca_step( grid: &mut Grid, diagonal_buffer: &mut Vec<Lin
             let v_r: Vertex;
             if i == 0 { v_l = vertices[num_of_verts - 1]} else {v_l = vertices[i-1]}
             if i == vertices.len() - 1 {v_r = vertices[0]} else { v_r = vertices[i+1]} 
-            println!("triangle to check v {} vl{} vr{} ", v.id, v_l.id, v_r.id);
 
             let bbox = calulate_bunding_box(v, v_l, v_r);
             if !check_grid_for_reflex_state(bbox, &mut grid.grid_segments, v_l.id, v_r.id) {
                 vertices.remove(i);
-                println!("added diag");
+                
                 diagonal_buffer.push(Line::new(Point::new(v_l.x, v_l.y), Point::new(v_r.x, v_r.y)));
+
+                stat_tupel = get_stats(v, v_l, v_r);
+                
+
                 num_of_verts -= 1;
 
                 //check if v_l changed from reflex to convex and update sgements if needed
@@ -87,18 +92,14 @@ pub fn perform_primitiv_eca_step( grid: &mut Grid, diagonal_buffer: &mut Vec<Lin
 
                     
                 }
-                println!("reflex verts after iter step");
-                for v in &*reflex_vertices {
-                    print!(" {}, ", v.id)
-                }
-                println!("");
+                
                 break;
             }
             
         }   
     }
 
-    return (vertices.to_vec(), reflex_vertices.to_vec(), diagonal_buffer.to_vec());
+    return (vertices.to_vec(), reflex_vertices.to_vec(), diagonal_buffer.to_vec(), stat_tupel );
 }
 
 fn check_if_reflex(vertex: Vertex, reflex_vertices: &[Vertex]) -> bool {
@@ -142,7 +143,7 @@ fn check_grid_for_reflex_state(bbox: BoundingBox, segments: &mut Vec<GridSegment
                           
                               for id in &seg.id_list {
                     
-                                if *id != v_l_id && *id != v_r_id { println!("abort iter cuz of vertex {}, next vertex", id);return true }
+                                if *id != v_l_id && *id != v_r_id { return true }
                                 
                             }
                             break;
@@ -157,3 +158,46 @@ fn check_grid_for_reflex_state(bbox: BoundingBox, segments: &mut Vec<GridSegment
     
     return false;
 }
+
+//funtcion that returns min angle of the triangle and its area
+fn get_stats(v: Vertex, u: Vertex, w: Vertex) -> (f32, f32){
+
+    //calculating vectors of trinagle
+    let vu = [v.x - u.x, v.y - u.y];
+    let vw = [v.x - w.x, v.y - w.y];
+    let uw = [u.x - w.x, u.y - w.y];
+
+    return (get_min_angle(vu, vw, uw), get_area(vu, vw))
+}
+
+fn get_min_angle(vec1: [f32; 2], vec2: [f32; 2], vec3: [f32; 2]) -> f32{
+
+    let len_1 = (vec1[0]* vec1[0] + vec1[1] * vec1[1]).sqrt();
+    let len_2 = (vec2[0]* vec2[0] + vec2[1] * vec2[1]).sqrt();
+    let len_3 = (vec3[0]* vec3[0] + vec3[1] * vec3[1]).sqrt();
+    //calculation angle between 2 of the 3 vectors
+    let a = ((vec1[0] * vec2[0] + vec1[1] * vec2[1]) / (len_1 * len_2)).acos() * 180.0/PI;
+    let b = ((vec1[0] * vec3[0] + vec1[1] * vec3[1]) / (len_1 * len_3)).acos() * 180.0/PI;
+    let c = ((vec3[0] * vec2[0] + vec3[1] * vec2[1]) / (len_3 * len_2)).acos() * 180.0/PI;
+
+    let mut out = a;
+    if b < out {
+        out = b;
+    }
+    if c < out {
+        out = c;
+    }
+    return out
+}
+
+fn get_area(vec1: [f32; 2], vec2: [f32; 2]) -> f32{
+
+    let len_1 = (vec1[0]* vec1[0] + vec1[1] * vec1[1]).sqrt();
+    let len_2 = (vec2[0]* vec2[0] + vec2[1] * vec2[1]).sqrt();
+    let a = ((vec1[0] * vec2[0] + vec1[1] * vec2[1]) / (len_1 * len_2)).acos() * 180.0/PI;
+
+    let area = 0.5 * len_1 * len_2 * a.sin();
+   
+    return area.abs()
+}
+

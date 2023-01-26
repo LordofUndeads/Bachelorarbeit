@@ -6,6 +6,8 @@ use iced::{
     Point, Rectangle, Column, Length, Element,  Alignment
 };
 
+use super::super::super::dep::eca_primitiv::grid::Stats;
+
 #[derive(Default)]
 pub struct ResultState {
     cache: canvas::Cache,
@@ -15,6 +17,7 @@ pub struct ResultPanel {
    pub polygon: ResultState,
    pub vertices: Vec<Vertex>,
    pub diagonals: Vec<Line>,
+   pub stats: Stats,
    pub panel_width: u16,
    pub panel_height: u16,
 }
@@ -26,6 +29,7 @@ impl<'a> ResultPanel {
                 cache: canvas::Cache::new() }, 
             vertices: vec![],
             diagonals: vec![],
+            stats: Stats::new(),
             panel_width: 400,
             panel_height: 400
         }

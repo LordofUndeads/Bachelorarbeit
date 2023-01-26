@@ -2,7 +2,7 @@ use iced::{button,
     Column, Container,  Element, Length, Row, Sandbox,
      Settings, Space, Text,  Rule, window, window::Position, Alignment, Point, 
 };
-use num_traits::cast::ToPrimitive;
+
 mod dep;
 use dep::{modules::{style, style::button, message::{PageMessage, Message},
     } };
@@ -13,11 +13,12 @@ use dep::iteration::preview::PreviewPanel;
 
 use dep::result::result_view::ResultPanel;
 
-use dep::eca_primitiv::grid::{Grid, get_reflex_vertices, SegState};
+use dep::eca_primitiv::grid::{Grid, get_reflex_vertices, Stats};
 use dep::eca_primitiv::eca::perform_primitiv_eca_step;
 
 use dep::modules::geometry::{Vertex, Line};
 
+use round::round;
 
 pub fn main() -> iced::Result {
 
@@ -202,7 +203,9 @@ impl Pages {
                     let mut diag_buffer = self.pages[1].get_diagonals();
                     //scale diagonals and move them to the center like the vertices
                     diag_buffer = Page::scale_diagonals(diag_buffer, width_in as f32, width_out as f32, height_in as f32, height_out as f32, offset_x, offset_y);
-                    self.pages[2].set_diagonal_buffer(diag_buffer);   
+                    self.pages[2].set_diagonal_buffer(diag_buffer);
+                    let stats = self.pages[1].get_stats();
+                    self.pages[2].set_stats(stats);
                     
                                                       
                 }
@@ -508,10 +511,12 @@ impl<'a> Page {
                     *current_step += 1;
                     
                     let tupel = perform_primitiv_eca_step(&mut preview_panel.grid, 
-                                &mut preview_panel.diagonals);
+                                &mut preview_panel.diagonals,);
                     preview_panel.grid.vertices = tupel.0;
                     preview_panel.grid.reflex_verts = tupel.1;
                     preview_panel.diagonals = tupel.2;
+                    preview_panel.stats.min_angles.push(tupel.3.0);
+                    preview_panel.stats.areas.push(tupel.3.1);
 
                     preview_panel.polygon.request_redraw()
                 }
@@ -712,6 +717,7 @@ impl<'a> Page {
                     
                     *current_step = 1;
                     preview_panel.diagonals = vec![];
+                    preview_panel.stats = Stats::new();
                     preview_panel.polygon.request_redraw();
                 
                     
@@ -720,6 +726,7 @@ impl<'a> Page {
             Page::Result { result_panel, .. } => {
                 
                 result_panel.diagonals = vec![];
+                result_panel.stats = Stats::new();
                 result_panel.polygon.request_redraw();
             
             }
@@ -764,6 +771,27 @@ impl<'a> Page {
         match self {
             Page::Result { result_panel, .. } => {
                 result_panel.diagonals = diagonals;
+            }
+            _ => {}
+        }
+    }
+
+    fn get_stats(&mut self) -> Stats {
+        match self {
+            Page::Iteration { preview_panel, .. } => {
+                let areas = (*preview_panel.stats.areas).to_vec();
+                let angles = (*preview_panel.stats.min_angles).to_vec();
+
+                Stats::new_from_values(angles, areas)
+            }
+            _ => {Stats::new()}
+        }
+    }
+
+    fn set_stats(&mut self, stats: Stats){
+        match self {
+            Page::Result { result_panel, .. } => {
+                result_panel.stats = stats;
             }
             _ => {}
         }
@@ -896,8 +924,19 @@ impl<'a> Page {
         //getting data for result:
         let num_verts_res = result_panel.vertices.len();
         let num_triangles_res = num_verts_res - 2;
-        let avg_area_res = "to be implemented";
-        let avg_angle_res = "to be implemented";
+
+        let mut angle_sum = 0.0;
+        for angle in &result_panel.stats.min_angles {
+            angle_sum += angle;
+        }
+
+        let mut area_sum = 0.0;
+        for area in &result_panel.stats.areas {
+            area_sum += area;
+        }
+
+        let avg_angle_res = round((angle_sum / result_panel.stats.min_angles.len() as f32).into(), 2);
+        let avg_area_res = round((area_sum / result_panel.stats.areas.len() as f32).into(), 2);
 
         //getting data for comparison:
         let num_verts_comp = "to be implemented";
@@ -911,8 +950,8 @@ impl<'a> Page {
                                                         .push(Column::new().align_items(Alignment::Start)
                                                             .push(Text::new(format!("Number of Verticies: {}", num_verts_res)))
                                                             .push(Text::new(format!("Number of Triangles: {}", num_triangles_res)))
-                                                            .push(Text::new(format!("Avg. Trinagle Area:  {}", avg_area_res)))
-                                                            .push(Text::new(format!("Avg. Minimum Angle:  {}", avg_angle_res))));
+                                                            .push(Text::new(format!("Avg. Trinagle Area:  {} AU", avg_area_res)))
+                                                            .push(Text::new(format!("Avg. Minimum Angle:  {} Deg.", avg_angle_res))));
 
         let compare = Column::new().align_items(Alignment::Center)
                                                         .push(Text::new("Comparision").size(25))
