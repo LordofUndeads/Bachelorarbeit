@@ -14,6 +14,7 @@ pub struct ResultState {
 pub struct ResultPanel {
    pub polygon: ResultState,
    pub vertices: Vec<Vertex>,
+   pub diagonals: Vec<Line>,
    pub panel_width: u16,
    pub panel_height: u16,
 }
@@ -24,6 +25,7 @@ impl<'a> ResultPanel {
             polygon: ResultState { 
                 cache: canvas::Cache::new() }, 
             vertices: vec![],
+            diagonals: vec![],
             panel_width: 400,
             panel_height: 400
         }
@@ -34,7 +36,7 @@ impl<'a> ResultPanel {
         .padding(0)
         .spacing(0)
         .align_items(Alignment::Center)
-        .push(result_panel.polygon.view((result_panel.vertices).to_vec(), result_panel.panel_width, result_panel.panel_height
+        .push(result_panel.polygon.view((result_panel.vertices).to_vec(), result_panel.diagonals.to_vec(),result_panel.panel_width, result_panel.panel_height
                 ).map(PageMessage::AddPoint))
         
         .into()
@@ -44,10 +46,11 @@ impl<'a> ResultPanel {
 }
 
 impl ResultState {
-    pub fn view<'a>(&'a mut self,  vertices: Vec<Vertex>, panel_width: u16, panel_height: u16) -> Element<'a, Point> {
+    pub fn view<'a>(&'a mut self,  vertices: Vec<Vertex>, diagonals: Vec<Line>,panel_width: u16, panel_height: u16) -> Element<'a, Point> {
         Canvas::new(PreviewPolygonOutLine {
             state: self,
             vertices,
+            diagonals,
              
         })
         .width(Length::Units(panel_width))
@@ -64,6 +67,7 @@ impl ResultState {
 struct PreviewPolygonOutLine<'a> {
    pub state: &'a mut ResultState,
    pub vertices: Vec<Vertex>,
+   pub diagonals: Vec<Line>,
 
 }
 
@@ -76,6 +80,7 @@ impl<'a> canvas::Program<Point> for PreviewPolygonOutLine<'a> {
         let content =
             self.state.cache.draw(bounds.size(), |frame: &mut Frame| {
                 Line::draw_all(&Vertex::without_id(self.vertices.to_vec()), frame);
+                Line::draw_all_line(&self.diagonals, frame);
                 Circle::draw_all_vertex(&self.vertices, 3.0,frame);
                 if let Some(from) = self.vertices.first() {
                     if let Some(to) = self.vertices.last() { 

@@ -5,7 +5,7 @@ use iced::{button,
 use num_traits::cast::ToPrimitive;
 mod dep;
 use dep::{modules::{style, style::button, message::{PageMessage, Message},
-    }, eca_primitiv::grid::SegState,  };
+    } };
 
 use dep::menu::{program_settings::ProgramSettings, tools::Tools, draw_panel::{DrawPanel, DrawState}, };
 
@@ -13,10 +13,10 @@ use dep::iteration::preview::PreviewPanel;
 
 use dep::result::result_view::ResultPanel;
 
-use dep::eca_primitiv::grid::{Grid, get_reflex_vertices};
+use dep::eca_primitiv::grid::{Grid, get_reflex_vertices, SegState};
 use dep::eca_primitiv::eca::perform_primitiv_eca_step;
 
-use dep::modules::geometry::Vertex;
+use dep::modules::geometry::{Vertex, Line};
 
 
 pub fn main() -> iced::Result {
@@ -176,14 +176,11 @@ impl Pages {
                     //x: width of draw_panel = 600         | y: height of draw_panel = 400
                     //   width of preview_panel = 1280     |    height of preview_panel = 500
                     // => offset_x = (1280 - 600)/ 2 = 340 | => offset_y = (500 - 400)/2 = 50
-
-                    // let width_in = self.pages[0].get_panel_width();
-                    // let height_in = self.pages[0].get_panel_height();
                     let width_out = self.pages[1].get_panel_width();
                     let height_out = self.pages[1].get_panel_height();
 
-                    buffer = Page::buffer_move_center(buffer, width_out, height_out);
-                    //buffer = Page::buffer_scale(buffer, width_in, width_out, height_in, height_out);  
+                    (buffer, _ , _ ) = Page::buffer_move_center(buffer, width_out as f32, height_out as f32);
+                    
                     
                     
                 }
@@ -194,11 +191,19 @@ impl Pages {
                     let width_out = self.pages[2].get_panel_width();
                     let height_out = self.pages[2].get_panel_height();
               
-                    
+                    let offset_x: f32;
+                    let offset_y: f32;
                     //scale vertices in buffer
-                    buffer = Page::buffer_scale(buffer, width_in, width_out, height_in, height_out);
+                    buffer = Page::buffer_scale(buffer, width_in as f32, width_out as f32, height_in as f32, height_out as f32);
                     //move buffer to center
-                    buffer = Page::buffer_move_center(buffer, width_out, height_out);   
+                    (buffer, offset_x, offset_y) = Page::buffer_move_center(buffer, width_out as f32, height_out as f32); 
+
+                    //get diagonal
+                    let mut diag_buffer = self.pages[1].get_diagonals();
+                    //scale diagonals and move them to the center like the vertices
+                    diag_buffer = Page::scale_diagonals(diag_buffer, width_in as f32, width_out as f32, height_in as f32, height_out as f32, offset_x, offset_y);
+                    self.pages[2].set_diagonal_buffer(diag_buffer);   
+                    
                                                       
                 }
 
@@ -590,8 +595,8 @@ impl<'a> Page {
                 preview_panel.vertices = vertex_buffer;
                 preview_panel.grid.vertices = buffer;
                 preview_panel.grid.reflex_verts = get_reflex_vertices(&mut preview_panel.grid.vertices);
-                Grid::init_segments(&mut preview_panel.grid );
                 
+                preview_panel.grid.grid_segments =  Grid::init_segments(&mut preview_panel.grid );
                 
             }
             Page::Result { result_panel, .. } => {
@@ -602,7 +607,7 @@ impl<'a> Page {
 
     //Function that moves all vertices in a buffer with a given offset so that the resulting polygon is placed
     //in the center of the new canvas
-    fn buffer_move_center(buffer: Vec<Vertex>, width: u16, height: u16) -> Vec<Vertex> {
+    fn buffer_move_center(buffer: Vec<Vertex>, width: f32, height: f32) -> (Vec<Vertex>, f32, f32 ){
         
         let mut output: Vec<Vertex> = vec![];
         //get bounding box around polygon
@@ -619,13 +624,10 @@ impl<'a> Page {
             
             output.push(vertex)
         }
-        //getting dimensions of canvas
-        let width_f32 = if let Some(width_f32) = width.to_f32(){ width_f32 } else { 0.0 };
-        let height_f32 = if let Some(height_f32) = height.to_f32(){ height_f32 } else { 0.0 };
 
         //calculation offsets
-        let offset_x = width_f32/2.0 - (min_x + (max_x - min_x)/2.0);
-        let offset_y = height_f32/2.0 - (min_y + (max_y - min_y)/2.0);
+        let offset_x = width/2.0 - (min_x + (max_x - min_x)/2.0);
+        let offset_y = height/2.0 - (min_y + (max_y - min_y)/2.0);
 
         //move the polygon to the center of the canvas
         for i in 0..output.len(){
@@ -634,24 +636,18 @@ impl<'a> Page {
             
         }
 
-        return output;
+        return (output, offset_x, offset_y);
     }
 
     //Function that scales vertices in a buffer with a given value so that the resulting polygon is bigger or smaller 
     //then the given one in the buffer
-    fn buffer_scale(buffer: Vec<Vertex>, width_in: u16, width_out: u16, height_in: u16, height_out: u16) -> Vec<Vertex> {
-        
-        //getting dimensions of input and output canvas
-        let width_in_f32 = if let Some(width_f32) = width_in.to_f32(){ width_f32 } else { 0.0 };
-        let height_in_f32 = if let Some(height_f32) = height_in.to_f32(){ height_f32 } else { 0.0 };
-        let width_out_f32 = if let Some(width_f32) = width_out.to_f32(){ width_f32 } else { 0.0 };
-        let height_out_f32 = if let Some(height_f32) = height_out.to_f32(){ height_f32 } else { 0.0 };
+    fn buffer_scale(buffer: Vec<Vertex>, width_in: f32, width_out: f32, height_in: f32, height_out: f32) -> Vec<Vertex> {
 
         //check which difference in dimension is bigger and get scale
-        let diff_x = num_traits::abs(width_in_f32 - width_out_f32);
-        let diff_y = num_traits::abs(height_in_f32 - height_out_f32);
+        let diff_x = num_traits::abs(width_in - width_out);
+        let diff_y = num_traits::abs(height_in - height_out);
 
-        let scale = if diff_x > diff_y {  width_out_f32/width_in_f32 } else {height_out_f32/height_in_f32};
+        let scale = if diff_x > diff_y {  width_out/width_in } else {height_out/height_in};
         
         //apply scale to vertices
         let mut output = vec![];
@@ -713,22 +709,66 @@ impl<'a> Page {
             
             Page::Iteration { current_step, preview_panel, .. } => {
 
-                    let one: usize = 1;
-                    *current_step = one;
-
+                    
+                    *current_step = 1;
+                    preview_panel.diagonals = vec![];
                     preview_panel.polygon.request_redraw();
                 
-                //diagonals = vec![];
+                    
                 
             }
             Page::Result { result_panel, .. } => {
                 
+                result_panel.diagonals = vec![];
                 result_panel.polygon.request_redraw();
             
             }
             _ => {}
         }
     }
+
+    //Funtction that returns diagonals from Iterationpage
+    fn get_diagonals(&mut self) -> Vec<Line> {
+        match self {
+            Page::Iteration { preview_panel, .. } => {
+                (*preview_panel.diagonals).to_vec()
+            }
+            _ => { vec![]}
+        }
+    }
+
+    //Function that scales and moves the diagonals to the center of thge panel like the vertices
+    fn scale_diagonals(diagonals: Vec<Line>, width_in: f32, width_out: f32, height_in: f32, height_out: f32,
+        offset_x: f32, offset_y: f32) -> Vec<Line> {
+        
+        //check which difference in dimension is bigger and get scale
+        let diff_x = num_traits::abs(width_in - width_out);
+        let diff_y = num_traits::abs(height_in - height_out);
+
+        let scale = if diff_x > diff_y {  width_out/width_in } else {height_out/height_in};
+        
+        // //apply scale to vertices
+        let mut output = vec![];
+        for mut line in diagonals {
+
+            line.from.x = line.from.x * scale + offset_x;
+            line.from.y = line.from.y * scale + offset_y;
+            line.to.x = line.to.x * scale + offset_x;
+            line.to.y = line.to.y * scale + offset_y;
+            output.push(line);
+        }
+        return output;
+    }
+
+    fn set_diagonal_buffer(&mut self, diagonals: Vec<Line>){
+        match self {
+            Page::Result { result_panel, .. } => {
+                result_panel.diagonals = diagonals;
+            }
+            _ => {}
+        }
+    }
+
 
     //function that defines the look of the menu with a draw poanel and drawing tools as well as several options for the algorithm
     fn menu(tools: &'a mut Tools, progset: &'a mut ProgramSettings, draw_panel: &'a mut DrawPanel, confirm_button: &'a mut button::State,

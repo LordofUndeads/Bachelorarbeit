@@ -18,9 +18,9 @@ impl Heuristic {
 impl From<Heuristic> for String {
     fn from(heuristic: Heuristic) -> String {
         String::from(match heuristic {
-            Heuristic::Random => "Random",
-            Heuristic::BiggestArea => "Biggest Area",
-            Heuristic::BiggestMinAngle => "Biggest Minimal Angle",
+            Heuristic::Random => "Primitiv",
+            Heuristic::BiggestArea => "Biggest Area (tbi)",
+            Heuristic::BiggestMinAngle => "Biggest Minimal Angle (tbi)",
         })
     }
 }

@@ -19,7 +19,7 @@ impl From<Algorithm> for String {
     fn from(algorithm: Algorithm) -> String {
         String::from(match algorithm {
             Algorithm::EarClipping => "Ear Clipping",
-            Algorithm::DelaunyTriangulation => "Delauny Triangulation",
+            Algorithm::DelaunyTriangulation => "Delauny Triangulation (tbi)",
         })
     }
 }

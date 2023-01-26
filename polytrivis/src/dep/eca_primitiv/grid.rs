@@ -1,4 +1,5 @@
 use iced::{Point};
+use num_traits::PrimInt;
 use round::round_up;
 use super::super::modules::geometry::Vertex;
 
@@ -37,27 +38,32 @@ impl<'a> Grid {
         }
     }
 
-    pub fn init_segments(grid: &mut Grid ) {
+    pub fn init_segments(grid: &mut Grid ) -> Vec<GridSegment>{
 
+        println!("{}", grid.reflex_verts.len());
         let num_of_verts = grid.vertices.len() as f32;
         
         let n = round_up(num_of_verts.sqrt() as f64, 0) as u16;
-        let num_x= grid.width * n;
-        let num_y = grid.height * n;
+        let num_x= grid.width/50 * n;
+        let num_y = grid.height/50 * n;
 
         let seg_width = grid.width / num_x;
         let seg_height = grid.height / num_y;
 
+        let mut segments: Vec<GridSegment> = vec![];
+
         for x in 0..num_x {
             for y in 0..num_y {
-                grid.grid_segments.push( GridSegment::new(Point::new((seg_width* x) as f32, (seg_height * y) as f32), seg_width, seg_height));
+                segments.push( GridSegment::new(Point::new((seg_width* x) as f32, (seg_height * y) as f32), seg_width, seg_height));
             }
         }
 
-        for i in 0..grid.grid_segments.len() {
-            GridSegment::calc_state(&grid.reflex_verts, &mut grid.grid_segments[i], );
+        for seg in &mut segments {
+            (seg.state, seg.id_list) = GridSegment::calc_state(&grid.reflex_verts, seg );
+            
         }
         
+        return segments;
         
     }
     
@@ -75,26 +81,43 @@ impl<'a> GridSegment {
     }
 
     //calculates the state of a grid segment freshly
-    pub fn calc_state(reflex_verts: &[Vertex], segment: &mut GridSegment,) {
+    pub fn calc_state(reflex_verts: &[Vertex], segment: &mut GridSegment,) -> (SegState, Vec<u16>) {
+
+        
+        let mut ret_state: SegState = SegState::None;
+        let mut ret_list: Vec<u16> = vec![];
 
         for i in 0..reflex_verts.len(){
+           
             if reflex_verts[i].x >= segment.ankor.x && reflex_verts[i].x <= segment.ankor.x + (segment.width) as f32 {
                 if reflex_verts[i].y >= segment.ankor.y && reflex_verts[i].y <= segment.ankor.y + (segment.height) as f32 {
-                    segment.state = SegState::Reflex;
-                    segment.id_list.push(reflex_verts[i].id);
+
+                    ret_list.push(reflex_verts[i].id);
+                    ret_state =  SegState::Reflex;
+                    
                 }
             }
         }
+        return (ret_state, ret_list)
     }
 
     //updates the state of a grid segment if a vertex changed from reflex to convex
-    pub fn update_state(segments: &mut Vec<GridSegment>, id: u16){
-        for seg in segments {
-            for i in 0..seg.id_list.len() -1 {
-                if seg.id_list[i] == id { seg.id_list.remove(i);}
-                if seg.id_list.len() == 0 { seg.state = SegState::None;} 
+    pub fn update_state(seg: &mut GridSegment, id: u16) -> (Vec<u16>, SegState){
+         
+            let mut list = seg.id_list.clone();
+
+            let mut i: usize = 0;
+            
+            while  i < seg.id_list.len() {
+                if seg.id_list[i] == id {  list.remove(i);}
+                i += 1;
             }
-        }
+            
+            if list.len() == 0 { return (list, SegState::None)} else {return (list, SegState::Reflex)}
+            
+        
+        
+        
     }
 
     
@@ -126,6 +149,7 @@ pub fn get_reflex_vertices(verts: &mut Vec<Vertex>) -> Vec<Vertex> {
         if i == 0 { v_l = verts[verts.len() - 1]} else {v_l = verts[i-1]}
         if i == verts.len() - 1 {v_r = verts[0]} else { v_r = verts[i+1]}  
         verts[i].signum = get_signum_of_det(verts[i], v_l, v_r); 
+       
     }
 
     //counting the negativ and positiv signums of the determinats
