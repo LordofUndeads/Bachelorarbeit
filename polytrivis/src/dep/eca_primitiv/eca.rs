@@ -4,7 +4,7 @@ use iced::Point;
 use crate::dep::modules::geometry::Vertex;
 
 use super::super::modules::geometry::{Line, BoundingBox};
-use super::grid::{Grid, SegState, get_signum_of_det, GridSegment, Stats};
+use super::grid::{Grid, SegState, get_signum_of_det, GridSegment, };
 
 pub fn perform_primitiv_eca_step( grid: &mut Grid, diagonal_buffer: &mut Vec<Line>) -> (Vec<Vertex>,Vec<Vertex>,Vec<Line>, (f32, f32)){
 

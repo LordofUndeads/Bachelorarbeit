@@ -1,5 +1,4 @@
 use iced::{Point};
-use num_traits::PrimInt;
 use round::round_up;
 use super::super::modules::geometry::Vertex;
 
@@ -45,7 +44,7 @@ impl<'a> Grid {
 
     pub fn init_segments(grid: &mut Grid ) -> Vec<GridSegment>{
 
-        println!("{}", grid.reflex_verts.len());
+        
         let num_of_verts = grid.vertices.len() as f32;
         
         let n = round_up(num_of_verts.sqrt() as f64, 0) as u16;

@@ -500,6 +500,7 @@ impl<'a> Page {
                 if let Page::Iteration { preview_panel, current_step , ..} = self {
                     
                     *current_step -= 1;
+                    preview_panel.step = *current_step - 1;
 
                     preview_panel.polygon.request_redraw()
                 }
@@ -507,16 +508,21 @@ impl<'a> Page {
             PageMessage::NextPressed => {
                 
                 if let Page::Iteration { preview_panel, current_step , ..} = self {
+
+             
+                    if *current_step  > preview_panel.diagonals.len() {
+                        let tupel = perform_primitiv_eca_step(&mut preview_panel.grid, 
+                                &mut preview_panel.diagonals,);
+                        preview_panel.grid.vertices = tupel.0;
+                        preview_panel.grid.reflex_verts = tupel.1;
+                        preview_panel.diagonals = tupel.2;
+                        preview_panel.stats.min_angles.push(tupel.3.0);
+                        preview_panel.stats.areas.push(tupel.3.1);
+                    }
+                   
                     
                     *current_step += 1;
-                    
-                    let tupel = perform_primitiv_eca_step(&mut preview_panel.grid, 
-                                &mut preview_panel.diagonals,);
-                    preview_panel.grid.vertices = tupel.0;
-                    preview_panel.grid.reflex_verts = tupel.1;
-                    preview_panel.diagonals = tupel.2;
-                    preview_panel.stats.min_angles.push(tupel.3.0);
-                    preview_panel.stats.areas.push(tupel.3.1);
+                    preview_panel.step = *current_step - 1;
 
                     preview_panel.polygon.request_redraw()
                 }

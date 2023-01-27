@@ -84,7 +84,7 @@ impl<'a> canvas::Program<Point> for PreviewPolygonOutLine<'a> {
         let content =
             self.state.cache.draw(bounds.size(), |frame: &mut Frame| {
                 Line::draw_all(&Vertex::without_id(self.vertices.to_vec()), frame);
-                Line::draw_all_line(&self.diagonals, frame);
+                Line::draw_all_line(&self.diagonals, self.diagonals.len() ,frame);
                 Circle::draw_all_vertex(&self.vertices, 3.0,frame);
                 if let Some(from) = self.vertices.first() {
                     if let Some(to) = self.vertices.last() { 

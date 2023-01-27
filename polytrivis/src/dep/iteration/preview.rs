@@ -19,6 +19,7 @@ pub struct PreviewPanel {
    pub polygon: PreviewState,
    pub vertices: Vec<Vertex>,
    pub diagonals: Vec<Line>,
+   pub step: usize,
    pub grid: Grid,
    pub stats: Stats,
    pub panel_width: u16,
@@ -36,6 +37,7 @@ impl<'a> PreviewPanel {
                 cache: canvas::Cache::new() }, 
             vertices: vec![],
             diagonals: vec![],
+            step: 0,
             grid: Grid::new(Point::new(0.0,0.0), 1280, 500, vec![], ),
             stats: Stats::new(),
             panel_width: 1280,
@@ -50,19 +52,20 @@ impl<'a> PreviewPanel {
         .padding(0)
         .spacing(0)
         .align_items(Alignment::Center)
-        .push(preview_panel.polygon.view((preview_panel.vertices).to_vec(), preview_panel.diagonals.to_vec(),preview_panel.ignore_input,
-                preview_panel.panel_width, preview_panel.panel_height).map(PageMessage::AddPoint))
+        .push(preview_panel.polygon.view((preview_panel.vertices).to_vec(), preview_panel.diagonals.to_vec(),preview_panel.step, 
+                preview_panel.ignore_input, preview_panel.panel_width, preview_panel.panel_height).map(PageMessage::AddPoint))
         
         .into()
     }
 }
 
 impl PreviewState {
-    pub fn view<'a>(&'a mut self,  verts: Vec<Vertex>, diagonals: Vec<Line>,ignore_input: bool, panel_width: u16, panel_height: u16 ) -> Element<'a, Point> {
+    pub fn view<'a>(&'a mut self,  verts: Vec<Vertex>, diagonals: Vec<Line>, step: usize,ignore_input: bool, panel_width: u16, panel_height: u16 ) -> Element<'a, Point> {
         Canvas::new(PreviewPolygonOutLine {
             state: self,
             vertices: verts,
             diagonals,
+            step,
             ignore_input, 
         })
         .width(Length::Units(panel_width))
@@ -74,21 +77,22 @@ impl PreviewState {
         self.cache.clear()
     }
 
-    pub fn set_pending_none(&mut self) {
-        self.pending = None;
-    }
+    // pub fn set_pending_none(&mut self) {
+    //     self.pending = None;
+    // }
 }
 
 struct PreviewPolygonOutLine<'a> {
    pub state: &'a mut PreviewState,
    pub vertices: Vec<Vertex>,
    pub diagonals: Vec<Line>,
+   pub step: usize,
    pub ignore_input: bool,
 }
 
 impl<'a> canvas::Program<Point> for PreviewPolygonOutLine<'a> {
     fn update(&mut self, event: Event, bounds: Rectangle, cursor: Cursor) -> (event::Status, Option<Point>) {
-        let cursor_position =
+        let _cursor_position =
             if self.ignore_input {
                 return (event::Status::Ignored, None);
             }
@@ -166,7 +170,7 @@ impl<'a> canvas::Program<Point> for PreviewPolygonOutLine<'a> {
         let content =
             self.state.cache.draw(bounds.size(), |frame: &mut Frame| {
                 Line::draw_all(&Vertex::without_id(self.vertices.to_vec()), frame);
-                Line::draw_all_line(&self.diagonals, frame);
+                Line::draw_all_line(&self.diagonals, self.step, frame);
                 Circle::draw_all_vertex(&self.vertices, 3.0,frame);
                 if let Some(from) = self.vertices.first() {
                     if let Some(to) = self.vertices.last() { 
@@ -204,15 +208,15 @@ impl<'a> canvas::Program<Point> for PreviewPolygonOutLine<'a> {
 
 #[derive(Debug, Clone, Copy)]
 enum Pending {
-   Iterate,
-   WaitSelection,
+//    Iterate,
+//    WaitSelection,
 }
 
 impl Pending {
     fn draw(&self, bounds: Rectangle, cursor: Cursor) -> Geometry {
-        let mut frame = Frame::new(bounds.size());
+        let frame = Frame::new(bounds.size());
 
-        if let Some(cursor_position) = cursor.position_in(&bounds) {
+        if let Some(_cursor_position) = cursor.position_in(&bounds) {
             match *self {
 
                 // Pending::WaitSndInput { from } => {
@@ -224,13 +228,13 @@ impl Pending {
                     
                 // }
                     
-                    Pending::Iterate => {
+                    // Pending::Iterate => {
 
-                    }
+                    // }
 
-                    Pending::WaitSelection => {
+                    // Pending::WaitSelection => {
 
-                    }
+                    // }
                 
                 
             };

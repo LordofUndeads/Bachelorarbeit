@@ -57,7 +57,7 @@ use iced_aw::card;
 
     pub enum RuleStyle {
         Light,
-        Dark,
+        //Dark,
     }
 
     impl rule::StyleSheet for RuleStyle {
@@ -65,7 +65,7 @@ use iced_aw::card;
             rule::Style {
                 color: match self {
                     RuleStyle::Light => Color::from_rgb(0.5, 0.5, 0.5),
-                    RuleStyle::Dark => Color::from_rgb(0.5, 0.5, 0.5),
+                    //RuleStyle::Dark => Color::from_rgb(0.5, 0.5, 0.5),
                 },
                 ..rule::Style::default()
             }

@@ -13,9 +13,7 @@ pub struct Line {
 }
 
 #[derive(Debug, Clone)]
-pub struct Circle{
-   // center: Point,
-}
+pub struct Circle{}
 
 impl Line {
 
@@ -39,10 +37,15 @@ impl Line {
 
         frame.stroke(&outlines, Stroke::default().with_width(2.0));
     }
-    pub fn draw_all_line(lines: &Vec<Line>, frame: &mut Frame) {
-        
+    pub fn draw_all_line(lines: &Vec<Line>, step: usize,  frame: &mut Frame) {
+        let mut sublines: Vec<Line> =  vec![];
+
+        if lines.len() > 0 {for i in 0..step {
+            sublines.push(lines[i]);
+        }}
+
         let outlines = Path::new(|p| {
-            for line in lines {
+            for line in sublines {
                 p.move_to(line.from);
                 p.line_to(line.to);
             }
